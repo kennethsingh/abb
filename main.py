@@ -1,3 +1,6 @@
+import time
+start = time.perf_counter()
+
 APPLE_DOC = "https://s2.q4cdn.com/470004039/files/doc_earnings/2024/q4/filing/10-Q4-2024-As-Filed.pdf"
 TESLA_DOC = "https://ir.tesla.com/_flysystem/s3/sec/000162828024002390/tsla-20231231-gen.pdf"
 
@@ -106,7 +109,7 @@ def format_prompt(query, context):
 def call_llm(prompt):
   output = generator(
       prompt,
-      max_new_tokens=300,
+      max_new_tokens=1000,
       temperature=0,
       do_sample=False)
   return output[0]["generated_text"][len(prompt):]
@@ -146,5 +149,6 @@ for i in range(len(questions)):
   answer, docs = answer_question(question)
   print(f"Question: {question}")
   print(f"Answer: {answer}")
+  print(f"Time elapsed: {time.perf_counter() - start:.2f} seconds")
   print("="*80, "\n")
 

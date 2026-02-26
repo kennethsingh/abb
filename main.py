@@ -83,8 +83,9 @@ retriever = vector_store.as_retriever(search_kwargs={"k":5})
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+# model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
+model_id = "openai/gpt-oss-120b"
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 

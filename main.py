@@ -101,7 +101,7 @@ def format_prompt(query, context):
   return f"""<|system|>
   You are a financial analyst assistant.
   Answer using only the provided context.
-  If answer is not found, say "Not found in provided documents."
+  If answer is not found, say "This question cannot be answered based on the provided documents."
   <|user|>
   Context:
   {context}
@@ -149,11 +149,34 @@ questions = [
 {"question_id": 13, "question": "What color is Teslas headquarters painted?"}
 ]
 
-for i in range(len(questions)):
-  question = questions[i]['question']
-  answer, docs = answer_question(question)
-  print(f"Question: {question}")
-  print(f"Answer: {answer}")
-  print(f"Time elapsed: {time.perf_counter() - start:.2f} seconds")
-  print("="*80, "\n")
+# for i in range(len(questions)):
+#   question = questions[i]['question']
+#   answer, docs = answer_question(question)
+#   print(f"Question: {question}")
+#   print(f"Answer: {answer}")
+#   print(f"Time elapsed: {time.perf_counter() - start:.2f} seconds")
+#   print("="*80, "\n")
+
+import json
+results = []
+for question in questions:
+  question_id = question['question_id']
+  question_text = question['question']
+
+  answer, docs = answer_question(question_text)
+
+  if "this question cannot be answered based on the provided documents" in answer.lower():
+    answer_text = "This question cannot be answered based on the provided documents"
+    sources = []
+  else:
+    answer_text = answer.strip()
+    sources = [doc.metadata['document'] for doc in docs]
+
+  results.append({
+    "question_id": question_id,
+    "answer": answer_text,
+    "sources": sources
+  })
+
+print(results)
 

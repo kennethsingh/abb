@@ -427,3 +427,7 @@ for i in llm_eval_results:
   print(f"Question ID: {i["question_id"]}")
   print(f"Verdict: {i['verdict']}")
   print("="*200, "\n\n")
+
+# Save evaluation dataframe
+evaluation_df = pd.DataFrame(llm_eval_results)
+evaluation_df.to_csv("evaluation_df.csv", index=False)

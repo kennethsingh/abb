@@ -287,4 +287,5 @@ for result in results:
     "semantic_similarity": sim_score
   })
 
-  print(evaluation_result)
+import pandas as pd
+print(pd.DataFrame(evaluation_result))

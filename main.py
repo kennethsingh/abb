@@ -179,5 +179,9 @@ for question in questions:
 
 print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
 
-print(results)
+for i in results:
+  print(i["question_id"])
+  print(i["answer"])
+  print(i["sources"])
+  print("="*200, "\n")
 

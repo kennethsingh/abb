@@ -92,7 +92,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(
     model_id,
     device_map="auto" if device=="cuda" else None,
-    dtype=torch.float32
+    dtype=torch.float16
 )
 
 generator = pipeline(

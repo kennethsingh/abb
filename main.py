@@ -146,6 +146,8 @@ def answer_question(query: str) -> dict:
   # Your RAG logic here
   docs = retriever.invoke(query)
 
+  print(docs)
+
   context = "\n\n".join([
       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"
       for doc in docs
@@ -154,7 +156,7 @@ def answer_question(query: str) -> dict:
   prompt = format_prompt(query, context)
 
   answer = call_llm(prompt)
-  return {"answer": answer, "sources": [docs]}
+  return {"answer": answer, "sources": docs}
 
 questions = [
 {"question_id": 1, "question": "What was Apples total revenue for the fiscal year ended September 28, 2024?"},

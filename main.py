@@ -118,7 +118,32 @@ def call_llm(prompt):
       do_sample=False)
   return output[0]["generated_text"][len(prompt):]
 
-def answer_question(query):
+# def answer_question(query):
+#   docs = retriever.invoke(query)
+
+#   context = "\n\n".join([
+#       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"
+#       for doc in docs
+#   ])
+
+#   prompt = format_prompt(query, context)
+
+#   answer = call_llm(prompt)
+
+#   return answer, docs
+
+def answer_question(query: str) -> dict:
+  """
+  Answers a question using the RAG pipeline.
+  Args:
+  query (str): The user question about Apple or Tesla 10-K filings.
+  
+  Returns:
+  dict: {
+  "answer": "Answer text or 'This question cannot be answered based on the provided documents.'",
+  "sources": ["Apple 10-K", "Item 8", "p. 28"] # Empty list if refused}
+  """
+  # Your RAG logic here
   docs = retriever.invoke(query)
 
   context = "\n\n".join([
@@ -129,8 +154,7 @@ def answer_question(query):
   prompt = format_prompt(query, context)
 
   answer = call_llm(prompt)
-
-  return answer, docs
+  return {"answer": answer, "sources": [docs]}
 
 questions = [
 {"question_id": 1, "question": "What was Apples total revenue for the fiscal year ended September 28, 2024?"},
@@ -162,20 +186,22 @@ for question in questions:
   question_id = question['question_id']
   question_text = question['question']
 
-  answer, docs = answer_question(question_text)
+  response = answer_question(question_text)
+  response['question_id'] = question_id
+  results.append(response)
 
-  if "this question cannot be answered based on the provided documents" in answer.lower():
-    answer_text = "This question cannot be answered based on the provided documents"
-    sources = []
-  else:
-    answer_text = answer.strip()
-    sources = [doc.metadata['document'] for doc in docs]
+  # if "this question cannot be answered based on the provided documents" in answer.lower():
+  #   answer_text = "This question cannot be answered based on the provided documents"
+  #   sources = []
+  # else:
+  #   answer_text = answer.strip()
+  #   sources = [doc.metadata['document'] for doc in docs]
 
-  results.append({
-    "question_id": question_id,
-    "answer": answer_text,
-    "sources": sources
-  })
+  # results.append({
+  #   "question_id": question_id,
+  #   "answer": answer_text,
+  #   "sources": sources
+  # })
 
 print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
 

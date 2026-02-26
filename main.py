@@ -147,7 +147,8 @@ def answer_question(query: str) -> dict:
   docs = retriever.invoke(query)
 
   # print(docs[0].metadata)
-  print([docs[0].metadata['document'], f"p. {docs[0].metadata['page']}"])
+  for doc in docs:
+    print({doc.metadata['document'], "Item ??", f"p. {doc.metadata['page']}"})
 
   context = "\n\n".join([
       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"

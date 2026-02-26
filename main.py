@@ -2,7 +2,7 @@ import time
 start = time.perf_counter()
 
 import warnings
-warnings.suppresswarnings("ignore")
+warnings.filterwarnings("ignore")
 
 APPLE_DOC = "https://s2.q4cdn.com/470004039/files/doc_earnings/2024/q4/filing/10-Q4-2024-As-Filed.pdf"
 TESLA_DOC = "https://ir.tesla.com/_flysystem/s3/sec/000162828024002390/tsla-20231231-gen.pdf"

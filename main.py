@@ -366,6 +366,8 @@ Instructions:
 - If the answer is factually correct and semantically equivalent to the ground truth, return: CORRECT
 - If the answer contradicts, hallucinates, or is incorrect, return: INCORRECT
 - If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
+
+Answer:
 """
 
 def call_eval_llm(prompt, max_new_tokens=10):

@@ -110,17 +110,16 @@ model = AutoModelForCausalLM.from_pretrained(
 #   tokenizer=tokenizer)
 
 def format_prompt(query, context):
-  return f"""<|system|>
+  return f"""
   You are a financial analyst assistant.
   Answer using only the provided context.
   If answer is not found, say "This question cannot be answered based on the provided documents."
-  <|user|>
+  
   Context:
   {context}
 
   Question:
   {query}
-  <|assistant|>
   """
 
 # def call_llm(prompt):

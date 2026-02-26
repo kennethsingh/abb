@@ -144,7 +144,7 @@ def call_answer_llm(prompt, max_new_tokens=300):
             **inputs,
             max_new_tokens=max_new_tokens,
             # do_sample=False
-            temperature=0.5
+            temperature=0.3
         )
 
     return tokenizer.decode(

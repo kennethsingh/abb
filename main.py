@@ -54,6 +54,23 @@ embedding_model = HuggingFaceEmbeddings(
     encode_kwargs={"normalize_embeddings": True}
 )
 
+print("Embedding completed")
+
+# Reranking
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch.nn.functional as F
+
+reranker_model_id = "BAAI/bge-reranker-base"
+
+rerank_tokenizer = AutoTokenizer.from_pretrained(reranker_model_id)
+rerank_model = AutoModelForSequenceClassification.from_pretrained(
+   reranker_model_id,
+   device_map="auto" if device=="cuda" else None,
+   dtype=torch.bfloat16 if device=="cuda" else torch.float32
+   )
+rerank_model.eval()
+
+# Put embeddings in vector db
 from langchain_community.vectorstores import FAISS
 
 vector_store = FAISS.from_documents(
@@ -61,32 +78,36 @@ vector_store = FAISS.from_documents(
     embedding_model
 )
 
-retriever = vector_store.as_retriever(search_kwargs={"k":5})
+retriever = vector_store.as_retriever(search_kwargs={"k":10})
 
-print("Embedding completed")
+# Function to rerank documents
+def rerank_documents(query, docs, top_k=5):
+   """
+   Rerank retrieved documents using cross-encoder and return top_k documents
+   """
+   pairs = [(query, doc.page_content) for doc in docs]
 
-# def build_prompt(query, docs):
-#   context = "\n\n".join([
-#       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"
-#       for doc in docs
-#   ])
+   inputs = rerank_tokenizer(
+      pairs,
+      padding=True,
+      truncation=True,
+      return_tensors="pt",
+      max_length=512
+   ).to(rerank_model.device)
 
-#   prompt = f"""
-#   You are a financial analyst assistant.
+   with torch.no_grad():
+      outputs = rerank_model(**inputs)
+      scores = outputs.logits.squeeze(-1)
 
-#   Use only the context below to answer to answer the question.
-#   If the answer is not in the context, say "Not found in provided documents."
+   ranked_indices = torch.argsort(scores, descending=True)
+   
+   reranked_docs = [docs[i] for i in ranked_indices[:top_k]]
 
-#   Context:
-#   {context}
+   return reranked_docs
 
-#   Question:
-#   {query}
 
-#   Answer:
-#   """
 
-#   return prompt
+
 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
@@ -179,6 +200,8 @@ def answer_question(query: str) -> dict:
   """
   # Your RAG logic here
   docs = retriever.invoke(query)
+
+  docs = rerank_documents(query, docs, top_k=5)
 
   # print(docs[0].metadata)
   sources =[]

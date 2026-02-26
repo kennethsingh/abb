@@ -143,7 +143,7 @@ def call_llm(prompt, max_new_tokens=300):
     with torch.no_grad():
         output = model.generate(
             **inputs,
-            max_new_tokens=300,
+            max_new_tokens=max_new_tokens,
             do_sample=False
         )
 
@@ -341,7 +341,8 @@ tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
 model = AutoModelForCausalLM.from_pretrained(
     eval_model_id,
     device_map="auto" if device=="cuda" else None,
-    dtype=torch.bfloat16
+    dtype=torch.bfloat16,
+    temperature=0
 )
 
 def build_eval_prompt(question, ground_truth, prediction):
@@ -358,11 +359,13 @@ Ground Truth Answer:
 Model Answer:
 {prediction}
 
+Rules:
+ - Return only one word: Either CORRECT or INCORRECT
+
 Instructions:
 - If the answer is factually correct and semantically equivalent to the ground truth, return: CORRECT
 - If the answer contradicts, hallucinates, or is incorrect, return: INCORRECT
 - If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
-- Output only one word: CORRECT or INCORRECT
 """
 
 

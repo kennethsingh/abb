@@ -398,7 +398,7 @@ def llm_judge(question, ground_truth, prediction):
   # )
 
   # verdict = output[0]["generated_text"][len(prompt):].strip()
-  verdict = call_llm(prompt, max_new_tokens=10)
+  verdict = call_eval_llm(prompt, max_new_tokens=10)
 
   return verdict.strip()
 

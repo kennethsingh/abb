@@ -343,9 +343,9 @@ for result in results:
   question_id = result["question_id"]
   prediction = result["answer"]
   if "this question cannot be answered based on the provided documents" in prediction.lower():
-     sources = result["sources"]
-  else:
      sources = "N/A"
+  else:
+     sources = result["sources"]
 
   truth = next(item["answer"] for item in ground_truth if item["question_id"]==question_id)
 
@@ -442,9 +442,9 @@ for result in results:
   prediction = result["answer"]
   
   if "this question cannot be answered based on the provided documents" in prediction.lower():
-     sources = result["sources"]
-  else:
      sources = "N/A"
+  else:
+     sources = result["sources"]
   
 
   question_text = next(q["question"] for q in questions if q["question_id"]==question_id)

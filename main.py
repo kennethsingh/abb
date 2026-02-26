@@ -85,7 +85,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
-model_id = "openai/gpt-oss-120b"
+model_id = "openai/gpt-oss-20b"
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 

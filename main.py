@@ -210,9 +210,81 @@ for question in questions:
 
 print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
 
-for i in results:
-  print(i["question_id"])
-  print(i["answer"])
-  print(i["sources"])
-  print("="*200, "\n")
+# for i in results:
+#   print(i["question_id"])
+#   print(i["answer"])
+#   print(i["sources"])
+#   print("="*200, "\n")
 
+# Evaluation
+ground_truth = [{
+  "question_id": 1, "answer": "$391,036 million"
+  },
+  {
+    "question_id": 2, "answer": "15,115,823,000 shares"
+  },
+  {
+    "question_id": 3, "answer": "$96,662 million"
+  },
+  {
+    "question_id": 4, "answer": "November 1, 2024"
+  },
+  {
+    "question_id": 5, "answer": "No. Checkmark indicates 'No' under Item 1B"
+  },
+  {
+    "question_id": 6, "answer": "$96,773 million"
+  },
+  {
+    "question_id": 7, "answer": "∼84% ($81,924M / $96,773M)"
+  },
+  {
+    "question_id": 8, "answer": "Central to strategy, innovation, leadership; loss could disrupt"
+  },
+  {
+    "question_id": 9, "answer": "Model S, Model 3, Model X, Model Y, Cybertruck"
+  },
+  {
+    "question_id": 10, "answer": "Finance solar systems with investors; customers sign PPAs"
+  },
+  {
+    "question_id": 11, "answer": "This question cannot be answered based on the provided documents"
+  },
+  {
+    "question_id": 12, "answer": "This question cannot be answered based on the provided documents"
+  },
+  {
+    "question_id": 13, "answer": "This question cannot be answered based on the provided documents"
+  }]
+
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+def semantic_similarity(prediction: str, ground_truth: str) -> float:
+  """
+  Computes cosine similarity between the LLM output and the actual answer
+  """
+  emb_pred = embedding_model.embed_query(prediction)
+  emb_truth = embedding_model.embed_query(ground_truth)
+
+  score = cosine_similarity([emb_pred], [emb_truth])[0][0]
+
+  return float(score)
+
+evaluation_result = []
+for result in results:
+  question_id = result["question_id"]
+  prediction = result["answer"]
+
+  truth = next(item["answer"] for item in ground_truth if item["question_id"]==question_id)
+
+  sim_score = semantic_similarity(prediction, truth)
+
+  evaluation_result.append({
+    "question_id": question_id,
+    "prediction": prediction,
+    "ground_truth": truth,
+    "semantic_similarity": sim_score
+  })
+
+  print(evaluation_result)

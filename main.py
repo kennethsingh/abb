@@ -177,5 +177,7 @@ for question in questions:
     "sources": sources
   })
 
+print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
+
 print(results)
 

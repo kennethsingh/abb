@@ -147,8 +147,9 @@ def answer_question(query: str) -> dict:
   docs = retriever.invoke(query)
 
   # print(docs[0].metadata)
+  sources =[]
   for doc in docs:
-    print({doc.metadata['document'], "Item ??", f"p. {doc.metadata['page']}"})
+    sources.append({doc.metadata['document'], "Item ??", f"p. {doc.metadata['page']}"})
 
   context = "\n\n".join([
       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"
@@ -158,7 +159,7 @@ def answer_question(query: str) -> dict:
   prompt = format_prompt(query, context)
 
   answer = call_llm(prompt)
-  return {"answer": answer, "sources": docs}
+  return {"answer": answer, "sources": sources}
 
 questions = [
 {"question_id": 1, "question": "What was Apples total revenue for the fiscal year ended September 28, 2024?"},

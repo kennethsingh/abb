@@ -389,4 +389,6 @@ for result in results:
 print(pd.DataFrame(llm_eval_results).to_string())
 
 for i in llm_eval_results:
-  print(i['verdict'])
+  print(f"Question ID: {i["question_id"]}")
+  print(f"Verdict: {i['verdict']}")
+  print("="*200, "\n\n")

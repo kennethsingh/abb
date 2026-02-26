@@ -318,6 +318,7 @@ evaluation_result = []
 for result in results:
   question_id = result["question_id"]
   prediction = result["answer"]
+  source = result["source"]
 
   truth = next(item["answer"] for item in ground_truth if item["question_id"]==question_id)
 
@@ -327,6 +328,7 @@ for result in results:
     "question_id": question_id,
     "prediction": prediction,
     "ground_truth": truth,
+    "source": source,
     "semantic_similarity": sim_score
   })
 
@@ -411,6 +413,7 @@ llm_eval_results = []
 for result in results:
   question_id = result["question_id"]
   prediction = result["answer"]
+  source = result["source"]
 
   question_text = next(q["question"] for q in questions if q["question_id"]==question_id)
   ground_truth_answer = next(gt["answer"] for gt in ground_truth if gt["question_id"]==question_id)
@@ -422,6 +425,7 @@ for result in results:
     "question": question_text,
     "ground_truth": ground_truth_answer,
     "prediction": prediction,
+    "source": source,
     "verdict": verdict
   })
 

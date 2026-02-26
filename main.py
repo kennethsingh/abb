@@ -257,6 +257,7 @@ ground_truth = [{
     "question_id": 13, "answer": "This question cannot be answered based on the provided documents"
   }]
 
+## Semantic similarity using Cosine similarity of embeddings
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
@@ -289,3 +290,57 @@ for result in results:
 
 import pandas as pd
 print(pd.DataFrame(evaluation_result))
+
+## LLM as the eveluator
+def build_eval_prompt(question, ground_truth, prediction):
+  return f"""
+You are an expert evaluator for finance questions and answers.
+Your task is to check whether the model output is correct or not.
+
+Question:
+{question}
+
+Ground Truth Answer:
+{ground_truth}
+
+Model Answer:
+{prediction}
+
+Instructions:
+- If the answer is factually correct and semantically equivalent to the ground truth, return: CORRECT
+- If the answer contradicts, hallucinates, or is incorrect, return: INCORRECT
+- If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
+- Output only one word: CORRECT or INCORRECT
+"""
+
+
+def llm_judge(question, ground_truth, prediction):
+  prompt = build_eval_prompt(question, ground_truth, prediction)
+
+  output = generator(
+    prompt,
+    max_new_tokens=10,
+    temperature=0,
+    do_sample=False
+  )
+
+  verdict = output[0]["generated_text"][len(prompt):].strip()
+
+  return verdict
+
+llm_eval_results = []
+for result in results:
+  question_id = result["question_id"]
+  prediction = result["answer"]
+
+  question_text = next(q["question"] for q in questions if q["question_id"]==question_id)
+  ground_truth_answer = next(gt["answer"] for gt in ground_truth if gt["question_id"]==question_id)
+
+  verdict = llm_judge(question_text, ground_truth_answer, prediction)
+
+  llm_eval_results.append({
+    "question_id": question_id,
+    "verdict": verdict
+  })
+
+print(pd.DataFrame(llm_eval_results))

@@ -156,7 +156,7 @@ def format_prompt(query, context):
 
 import torch
 
-def call_answer_llm(prompt, max_new_tokens=500):
+def call_answer_llm(prompt, max_new_tokens=250):
     inputs = tokenizer(
         prompt,
         return_tensors="pt"

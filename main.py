@@ -116,7 +116,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
 # model_id = "openai/gpt-oss-20b"
-model_id = "Qwen/Qwen2.5-7B-Instruct"
+# model_id = "Qwen/Qwen2.5-7B-Instruct"
+model_id = "meta-llama/Llama-3.1-8B-Instruct"
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -135,7 +136,7 @@ def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
   Be precise and answer using only the provided context.
-  Do not make assumptions.
+  Do NOT make assumptions.
   If answer is not found, ONLY say "This question cannot be answered based on the provided documents."
   
   Context:

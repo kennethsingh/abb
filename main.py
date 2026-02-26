@@ -146,7 +146,8 @@ def answer_question(query: str) -> dict:
   # Your RAG logic here
   docs = retriever.invoke(query)
 
-  print(docs[0].metadata)
+  # print(docs[0].metadata)
+  print([docs[0].metadata['document'], docs[0].metadata['page']])
 
   context = "\n\n".join([
       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"

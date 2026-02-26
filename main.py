@@ -34,10 +34,14 @@ chunked_docs = text_splitter.split_documents(all_docs)
 
 # Embedding
 from langchain_community.embeddings import HuggingFaceEmbeddings
+import torch
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
 
 embedding_model = HuggingFaceEmbeddings(
     model_name="BAAI/bge-base-en-v1.5",
-    # model_kwargs={"device": "cuda"},
+    model_kwargs={"device": device},
     encode_kwargs={"normalize_embeddings": True}
 )
 
@@ -83,14 +87,15 @@ tokenizer = AutoTokenizer.from_pretrained(model_id)
 
 model = AutoModelForCausalLM.from_pretrained(
     model_id,
-    # device_map="cpu",
+    device_map="auto" if device=="cuda" else None,
     torch_dtype=torch.float32
 )
 
 generator = pipeline(
   "text-generation",
   model=model,
-  tokenizer=tokenizer)
+  tokenizer=tokenizer,
+  device=0 if device=="cuda" else -1)
 
 def format_prompt(query, context):
   return f"""<|system|>

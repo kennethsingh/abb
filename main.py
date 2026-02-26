@@ -56,6 +56,18 @@ embedding_model = HuggingFaceEmbeddings(
 
 print("Embedding completed")
 
+
+# Put embeddings in vector db
+from langchain_community.vectorstores import FAISS
+
+vector_store = FAISS.from_documents(
+    chunked_docs,
+    embedding_model
+)
+
+retriever = vector_store.as_retriever(search_kwargs={"k":10})
+
+
 # Reranking
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch.nn.functional as F
@@ -70,17 +82,6 @@ rerank_model = AutoModelForSequenceClassification.from_pretrained(
    )
 rerank_model.eval()
 
-# Put embeddings in vector db
-from langchain_community.vectorstores import FAISS
-
-vector_store = FAISS.from_documents(
-    chunked_docs,
-    embedding_model
-)
-
-retriever = vector_store.as_retriever(search_kwargs={"k":10})
-
-# Function to rerank documents
 def rerank_documents(query, docs, top_k=5):
    """
    Rerank retrieved documents using cross-encoder and return top_k documents

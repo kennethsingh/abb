@@ -382,7 +382,7 @@ def call_eval_llm(prompt, max_new_tokens=10):
             # temperature=0.5
         )
 
-    return tokenizer.decode(
+    return eval_tokenizer.decode(
         output[0][inputs["input_ids"].shape[1]:],
         skip_special_tokens=True
     )

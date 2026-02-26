@@ -331,7 +331,9 @@ for result in results:
   })
 
 import pandas as pd
-print(pd.DataFrame(evaluation_result).to_string(justify="left"))
+eval_df = pd.DataFrame(evaluation_result)
+print(eval_df.to_string(formatters={col: lambda x: f"{str(x):<30}" for col in eval_df.columns}))
+
 
 ## LLM as the eveluator
 def build_eval_prompt(question, ground_truth, prediction):
@@ -386,4 +388,7 @@ for result in results:
     "verdict": verdict
   })
 
-print(pd.DataFrame(llm_eval_results).to_string(justify="left"))
+
+eval_df = pd.DataFrame(llm_eval_results)
+print(eval_df.to_string(formatters={col: lambda x: f"{str(x):<30}" for col in eval_df.columns}))
+

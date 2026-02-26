@@ -94,8 +94,7 @@ model = AutoModelForCausalLM.from_pretrained(
 generator = pipeline(
   "text-generation",
   model=model,
-  tokenizer=tokenizer,
-  device=0 if device=="cuda" else -1)
+  tokenizer=tokenizer)
 
 def format_prompt(query, context):
   return f"""<|system|>

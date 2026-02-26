@@ -144,7 +144,7 @@ def call_answer_llm(prompt, max_new_tokens=300):
             **inputs,
             max_new_tokens=max_new_tokens,
             # do_sample=False
-            temperature=0.3
+            temperature=0.1
         )
 
     return tokenizer.decode(
@@ -331,7 +331,11 @@ for result in results:
   })
 
 import pandas as pd
-print(pd.DataFrame(evaluation_result).to_string())
+# print(pd.DataFrame(evaluation_result).to_string())
+
+# Save semantice similarity evaluation dataframe
+semantic_evaluation_df = pd.DataFrame(evaluation_result)
+semantic_evaluation_df.to_csv("semantic_evaluation_df.csv", index=False)
 
 ## LLM as the eveluator
 eval_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
@@ -428,6 +432,6 @@ for i in llm_eval_results:
   print(f"Verdict: {i['verdict']}")
   print("="*200, "\n\n")
 
-# Save evaluation dataframe
-evaluation_df = pd.DataFrame(llm_eval_results)
-evaluation_df.to_csv("evaluation_df.csv", index=False)
+# Save llm evaluation dataframe
+llm_evaluation_df = pd.DataFrame(llm_eval_results)
+llm_evaluation_df.to_csv("llm_evaluation_df.csv", index=False)

@@ -134,7 +134,7 @@ def format_prompt(query, context):
 
 import torch
 
-def call_llm(prompt, max_new_tokens=300):
+def call_answer_llm(prompt, max_new_tokens=300):
     inputs = tokenizer(
         prompt,
         return_tensors="pt"
@@ -144,7 +144,8 @@ def call_llm(prompt, max_new_tokens=300):
         output = model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
-            do_sample=False
+            # do_sample=False
+            temperature=0.5
         )
 
     return tokenizer.decode(
@@ -192,7 +193,7 @@ def answer_question(query: str) -> dict:
 
   prompt = format_prompt(query, context)
 
-  answer = call_llm(prompt)
+  answer = call_answer_llm(prompt)
   return {"answer": answer, "sources": sources}
 
 print("Question answer function created")
@@ -336,9 +337,9 @@ print(pd.DataFrame(evaluation_result).to_string())
 ## LLM as the eveluator
 eval_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
 
-tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
+eval_tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
 
-model = AutoModelForCausalLM.from_pretrained(
+eval_model = AutoModelForCausalLM.from_pretrained(
     eval_model_id,
     device_map="auto" if device=="cuda" else None,
     dtype=torch.bfloat16
@@ -367,6 +368,24 @@ Instructions:
 - If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
 """
 
+def call_eval_llm(prompt, max_new_tokens=10):
+    inputs = eval_tokenizer(
+        prompt,
+        return_tensors="pt"
+    ).to(eval_model.device)
+
+    with torch.no_grad():
+        output = eval_model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False
+            # temperature=0.5
+        )
+
+    return tokenizer.decode(
+        output[0][inputs["input_ids"].shape[1]:],
+        skip_special_tokens=True
+    )
 
 def llm_judge(question, ground_truth, prediction):
   prompt = build_eval_prompt(question, ground_truth, prediction)

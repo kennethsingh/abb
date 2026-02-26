@@ -1,6 +1,8 @@
 import time
 start = time.perf_counter()
 
+print("Started")
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -27,6 +29,8 @@ tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
 
 all_docs = apple_doc + tesla_doc
 
+print("Extracted data from PDFs")
+
 # Chunking
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,
@@ -34,6 +38,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 
 chunked_docs = text_splitter.split_documents(all_docs)
+
+print("Chunking completed")
 
 # Embedding
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -56,6 +62,8 @@ vector_store = FAISS.from_documents(
 )
 
 retriever = vector_store.as_retriever(search_kwargs={"k":5})
+
+print("Embedding completed")
 
 # def build_prompt(query, docs):
 #   context = "\n\n".join([
@@ -186,6 +194,9 @@ def answer_question(query: str) -> dict:
   answer = call_llm(prompt)
   return {"answer": answer, "sources": sources}
 
+print("Question answer function created")
+
+
 questions = [
 {"question_id": 1, "question": "What was Apples total revenue for the fiscal year ended September 28, 2024?"},
 {"question_id": 2, "question": "How many shares of common stock were issued and outstanding as of October 18, 2024?"},
@@ -209,6 +220,8 @@ questions = [
 #   print(f"Answer: {answer}")
 #   print(f"Time elapsed: {time.perf_counter() - start:.2f} seconds")
 #   print("="*80, "\n")
+
+print("Getting answers for the 13 questions")
 
 import json
 results = []
@@ -241,6 +254,9 @@ print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
 #   print(i["sources"])
 #   print("="*200, "\n")
 
+print("Answers received")
+
+print("Evaluating output")
 # Evaluation
 ground_truth = [{
   "question_id": 1, "answer": "$391,036 million"

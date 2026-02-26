@@ -134,7 +134,7 @@ model = AutoModelForCausalLM.from_pretrained(
 def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
-  Answer using only the provided context.
+  Be precise and answer using only the provided context.
   If answer is not found, say "This question cannot be answered based on the provided documents."
   
   Context:
@@ -155,7 +155,7 @@ def format_prompt(query, context):
 
 import torch
 
-def call_answer_llm(prompt, max_new_tokens=300):
+def call_answer_llm(prompt, max_new_tokens=100):
     inputs = tokenizer(
         prompt,
         return_tensors="pt"

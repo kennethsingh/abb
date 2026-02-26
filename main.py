@@ -95,10 +95,10 @@ model = AutoModelForCausalLM.from_pretrained(
     dtype=torch.float16
 )
 
-generator = pipeline(
-  "text-generation",
-  model=model,
-  tokenizer=tokenizer)
+# generator = pipeline(
+#   "text-generation",
+#   model=model,
+#   tokenizer=tokenizer)
 
 def format_prompt(query, context):
   return f"""<|system|>
@@ -114,13 +114,34 @@ def format_prompt(query, context):
   <|assistant|>
   """
 
+# def call_llm(prompt):
+#   output = generator(
+#       prompt,
+#       max_new_tokens=1000,
+#       temperature=0,
+#       do_sample=False)
+#   return output[0]["generated_text"][len(prompt):]
+
+
+import torch
+
 def call_llm(prompt):
-  output = generator(
-      prompt,
-      max_new_tokens=1000,
-      temperature=0,
-      do_sample=False)
-  return output[0]["generated_text"][len(prompt):]
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt"
+    ).to(model.device)
+
+    with torch.no_grad():
+        output = model.generate(
+            **inputs,
+            max_new_tokens=300,
+            do_sample=False
+        )
+
+    return tokenizer.decode(
+        output[0][inputs["input_ids"].shape[1]:],
+        skip_special_tokens=True
+    )
 
 # def answer_question(query):
 #   docs = retriever.invoke(query)
@@ -321,16 +342,17 @@ Instructions:
 def llm_judge(question, ground_truth, prediction):
   prompt = build_eval_prompt(question, ground_truth, prediction)
 
-  output = generator(
-    prompt,
-    max_new_tokens=10,
-    temperature=0,
-    do_sample=False
-  )
+  # output = generator(
+  #   prompt,
+  #   max_new_tokens=10,
+  #   temperature=0,
+  #   do_sample=False
+  # )
 
-  verdict = output[0]["generated_text"][len(prompt):].strip()
+  # verdict = output[0]["generated_text"][len(prompt):].strip()
+  verdict = call_llm(prompt, max_new_tokens=10)
 
-  return verdict
+  return verdict.strip()
 
 llm_eval_results = []
 for result in results:

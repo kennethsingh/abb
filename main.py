@@ -341,8 +341,7 @@ tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
 model = AutoModelForCausalLM.from_pretrained(
     eval_model_id,
     device_map="auto" if device=="cuda" else None,
-    dtype=torch.bfloat16,
-    temperature=0
+    dtype=torch.bfloat16
 )
 
 def build_eval_prompt(question, ground_truth, prediction):

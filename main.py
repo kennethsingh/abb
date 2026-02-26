@@ -334,6 +334,16 @@ import pandas as pd
 print(pd.DataFrame(evaluation_result).to_string())
 
 ## LLM as the eveluator
+eval_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
+
+tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
+
+model = AutoModelForCausalLM.from_pretrained(
+    eval_model_id,
+    device_map="auto" if device=="cuda" else None,
+    dtype=torch.bfloat16
+)
+
 def build_eval_prompt(question, ground_truth, prediction):
   return f"""
 You are an expert evaluator for finance questions and answers.

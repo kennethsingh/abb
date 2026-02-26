@@ -135,7 +135,7 @@ model = AutoModelForCausalLM.from_pretrained(
 def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
-  Answer using only the provided context.
+  Reason step by step and answer using only the provided context.
   If answer is not found, say "This question cannot be answered based on the provided documents."
   
   Context:

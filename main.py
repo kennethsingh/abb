@@ -416,6 +416,9 @@ for result in results:
 
   llm_eval_results.append({
     "question_id": question_id,
+    "question": question_text,
+    "ground_truth": ground_truth_answer,
+    "prediction": prediction,
     "verdict": verdict
   })
 

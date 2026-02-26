@@ -135,7 +135,8 @@ def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
   Be precise and answer using only the provided context.
-  If answer is not found, say "This question cannot be answered based on the provided documents."
+  Do not make assumptions.
+  If answer is not found, ONLY say "This question cannot be answered based on the provided documents."
   
   Context:
   {context}

@@ -183,7 +183,7 @@ def answer_question(query: str) -> dict:
   # Your RAG logic here
   docs = retriever.invoke(query)
 
-  docs = rerank_documents(query, docs, top_k=1)
+  docs = rerank_documents(query, docs, top_k=5)
 
   # print(docs[0].metadata)
   sources =[]

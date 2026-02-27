@@ -23,5 +23,5 @@ tesla_doc = data_extract(TESLA_DOC, "Tesla 10-K")
 
 all_docs = apple_doc + tesla_doc
 
-print(apple_doc[-1])
+print(apple_doc[0])
 

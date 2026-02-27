@@ -129,6 +129,7 @@ model_id = "openai/gpt-oss-120b"
 # model_id = "deepseek-ai/DeepSeek-R1-Zero"
 # model_id = "Qwen/Qwen3-14B"
 
+print(f"Using Moodel: {model_id}")
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 

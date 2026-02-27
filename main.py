@@ -40,7 +40,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 chunked_docs = text_splitter.split_documents(all_docs)
 
 for doc in chunked_docs:
-   if doc.metadata["page"] == 19:
+   if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
       print(f"Page 20 content: {doc.page_content}")
 
 print("Chunking completed")

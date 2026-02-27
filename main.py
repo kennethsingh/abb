@@ -3,6 +3,7 @@ start = time.perf_counter()
 
 print("Started")
 
+import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -366,140 +367,164 @@ ground_truth = [{
     "question_id": 13, "answer": "This question cannot be answered based on the provided documents"
   }]
 
-## Semantic similarity using Cosine similarity of embeddings
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-
-def semantic_similarity(prediction: str, ground_truth: str) -> float:
-  """
-  Computes cosine similarity between the LLM output and the actual answer
-  """
-  emb_pred = embedding_model.embed_query(prediction)
-  emb_truth = embedding_model.embed_query(ground_truth)
-
-  score = cosine_similarity([emb_pred], [emb_truth])[0][0]
-
-  return float(score)
-
-evaluation_result = []
-for result in results:
-  question_id = result["question_id"]
-  prediction = result["answer"]
-  sources = result["sources"]
-
-  truth = next(item["answer"] for item in ground_truth if item["question_id"]==question_id)
-
-  sim_score = semantic_similarity(prediction, truth)
-
-  evaluation_result.append({
-    "question_id": question_id,
-    "prediction": prediction,
-    "ground_truth": truth,
-    "sources": sources,
-    "semantic_similarity": sim_score
-  })
-
-
-import pandas as pd
-# print(pd.DataFrame(evaluation_result).to_string())
-
-# Save semantice similarity evaluation dataframe
-semantic_evaluation_df = pd.DataFrame(evaluation_result)
-semantic_evaluation_df.to_csv("semantic_evaluation_df.csv", index=False)
-
-## LLM as the eveluator
-eval_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
-
-eval_tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
-
-eval_model = AutoModelForCausalLM.from_pretrained(
-    eval_model_id,
-    device_map="auto" if device=="cuda" else None,
-    dtype=torch.bfloat16
-)
-
-def build_eval_prompt(question, ground_truth, prediction):
-  return f"""
-You are an expert evaluator for finance questions and answers.
-Your task is to check whether the model output is correct or not.
-
-Question:
-{question}
-
-Ground Truth Answer:
-{ground_truth}
-
-Model Answer:
-{prediction}
-
-Rules:
- - Return only one word: Either CORRECT or INCORRECT
-
-Instructions:
-- If the answer is factually correct and semantically equivalent to the ground truth, return: CORRECT
-- If the answer contradicts, hallucinates, or is incorrect, return: INCORRECT
-- If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
-
-Answer:
-"""
-
-def call_eval_llm(prompt, max_new_tokens=10):
-    inputs = eval_tokenizer(
-        prompt,
-        return_tensors="pt"
-    ).to(eval_model.device)
-
-    with torch.no_grad():
-        output = eval_model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=False
-            # temperature=0.5
-        )
-
-    return eval_tokenizer.decode(
-        output[0][inputs["input_ids"].shape[1]:],
-        skip_special_tokens=True
-    )
-
-def llm_judge(question, ground_truth, prediction):
-  prompt = build_eval_prompt(question, ground_truth, prediction)
-
-  verdict = call_eval_llm(prompt, max_new_tokens=10)
-
-  return verdict.strip()
-
-llm_eval_results = []
+# Compare prediction vs ground truth
+truth_vs_prediction = []
 for result in results:
   question_id = result["question_id"]
   prediction = result["answer"]
   
   sources = result["sources"]
   
-
   question_text = next(q["question"] for q in rephrased_questions if q["question_id"]==question_id)
   rephrased_question_text = next(q["rephrased_question"] for q in rephrased_questions if q["question_id"]==question_id)
   ground_truth_answer = next(gt["answer"] for gt in ground_truth if gt["question_id"]==question_id)
-
-  verdict = llm_judge(rephrased_question_text, ground_truth_answer, prediction)
-
-  llm_eval_results.append({
+  truth_vs_prediction.append({
     "question_id": question_id,
     "question": question_text,
     "rephrased_question": rephrased_question_text,
     "ground_truth": ground_truth_answer,
     "prediction": prediction,
-    "sources": sources,
-    "verdict": verdict
+    "sources": sources
   })
 
-print(pd.DataFrame(llm_eval_results).to_string())
+truth_vs_prediction = pd.DataFrame(truth_vs_prediction)
+truth_vs_prediction.to_csv("truth_vs_prediction.csv", index = False)
 
-# for i in llm_eval_results:
-#   print(f"Question ID: {i["question_id"]}")
-#   print(f"Verdict: {i['verdict']}")
-#   print("="*200, "\n\n")
 
-# Save llm evaluation dataframe
-llm_evaluation_df = pd.DataFrame(llm_eval_results)
-llm_evaluation_df.to_csv("llm_evaluation_df.csv", index=False)
+## Semantic similarity using Cosine similarity of embeddings
+# from sklearn.metrics.pairwise import cosine_similarity
+# import numpy as np
+
+# def semantic_similarity(prediction: str, ground_truth: str) -> float:
+#   """
+#   Computes cosine similarity between the LLM output and the actual answer
+#   """
+#   emb_pred = embedding_model.embed_query(prediction)
+#   emb_truth = embedding_model.embed_query(ground_truth)
+
+#   score = cosine_similarity([emb_pred], [emb_truth])[0][0]
+
+#   return float(score)
+
+# evaluation_result = []
+# for result in results:
+#   question_id = result["question_id"]
+#   prediction = result["answer"]
+#   sources = result["sources"]
+
+#   truth = next(item["answer"] for item in ground_truth if item["question_id"]==question_id)
+
+#   sim_score = semantic_similarity(prediction, truth)
+
+#   evaluation_result.append({
+#     "question_id": question_id,
+#     "prediction": prediction,
+#     "ground_truth": truth,
+#     "sources": sources,
+#     "semantic_similarity": sim_score
+#   })
+
+
+# import pandas as pd
+# # print(pd.DataFrame(evaluation_result).to_string())
+
+# # Save semantice similarity evaluation dataframe
+# semantic_evaluation_df = pd.DataFrame(evaluation_result)
+# semantic_evaluation_df.to_csv("semantic_evaluation_df.csv", index=False)
+
+## LLM as the eveluator
+# eval_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
+
+# eval_tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
+
+# eval_model = AutoModelForCausalLM.from_pretrained(
+#     eval_model_id,
+#     device_map="auto" if device=="cuda" else None,
+#     dtype=torch.bfloat16
+# )
+
+# def build_eval_prompt(question, ground_truth, prediction):
+#   return f"""
+# You are an expert evaluator for finance questions and answers.
+# Your task is to check whether the model output is correct or not.
+
+# Question:
+# {question}
+
+# Ground Truth Answer:
+# {ground_truth}
+
+# Model Answer:
+# {prediction}
+
+# Rules:
+#  - Return only one word: Either CORRECT or INCORRECT
+
+# Instructions:
+# - If the answer is factually correct and semantically equivalent to the ground truth, return: CORRECT
+# - If the answer contradicts, hallucinates, or is incorrect, return: INCORRECT
+# - If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
+
+# Answer:
+# """
+
+# def call_eval_llm(prompt, max_new_tokens=10):
+#     inputs = eval_tokenizer(
+#         prompt,
+#         return_tensors="pt"
+#     ).to(eval_model.device)
+
+#     with torch.no_grad():
+#         output = eval_model.generate(
+#             **inputs,
+#             max_new_tokens=max_new_tokens,
+#             do_sample=False
+#             # temperature=0.5
+#         )
+
+#     return eval_tokenizer.decode(
+#         output[0][inputs["input_ids"].shape[1]:],
+#         skip_special_tokens=True
+#     )
+
+# def llm_judge(question, ground_truth, prediction):
+#   prompt = build_eval_prompt(question, ground_truth, prediction)
+
+#   verdict = call_eval_llm(prompt, max_new_tokens=10)
+
+#   return verdict.strip()
+
+# llm_eval_results = []
+# for result in results:
+#   question_id = result["question_id"]
+#   prediction = result["answer"]
+  
+#   sources = result["sources"]
+  
+
+#   question_text = next(q["question"] for q in rephrased_questions if q["question_id"]==question_id)
+#   rephrased_question_text = next(q["rephrased_question"] for q in rephrased_questions if q["question_id"]==question_id)
+#   ground_truth_answer = next(gt["answer"] for gt in ground_truth if gt["question_id"]==question_id)
+
+#   verdict = llm_judge(rephrased_question_text, ground_truth_answer, prediction)
+
+#   llm_eval_results.append({
+#     "question_id": question_id,
+#     "question": question_text,
+#     "rephrased_question": rephrased_question_text,
+#     "ground_truth": ground_truth_answer,
+#     "prediction": prediction,
+#     "sources": sources,
+#     "verdict": verdict
+#   })
+
+# print(pd.DataFrame(llm_eval_results).to_string())
+
+# # for i in llm_eval_results:
+# #   print(f"Question ID: {i["question_id"]}")
+# #   print(f"Verdict: {i['verdict']}")
+# #   print("="*200, "\n\n")
+
+# # Save llm evaluation dataframe
+# llm_evaluation_df = pd.DataFrame(llm_eval_results)
+# llm_evaluation_df.to_csv("llm_evaluation_df.csv", index=False)

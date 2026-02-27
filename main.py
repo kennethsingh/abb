@@ -69,7 +69,7 @@ retriever = vector_store.as_retriever(search_kwargs={"k":20})
 
 docs = retriever.invoke("Does Apple have any unresolved staff comments from the SEC as of this filing? How do you know?")
 for doc in docs:
-   print(f"Retrieved Page: {doc.metadata["page"]}")
+   print(f"Retrieved Page: {doc.metadata['page']}")
 
 # Reranking
 from transformers import AutoTokenizer, AutoModelForSequenceClassification

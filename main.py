@@ -149,12 +149,12 @@ def format_prompt(query, context):
   Finally, output only the answer in one sentence.
 
   Example 1:
-  Question: When was Tesla founder?
-  Answer: 2003
+  Question: In which year was Tesla founder?
+  Answer: Tesla was founded in the year 2003
 
   Example 2:
   Question: Where is Apple's headquarters?
-  Answer: USA
+  Answer: Apple headquarters is in USA
 
   Now answer this question:
   Context:
@@ -327,45 +327,19 @@ print("Answers received")
 
 print("Evaluating output")
 # Evaluation
-ground_truth = [{
-  "question_id": 1, "answer": "$391,036 million"
-  },
-  {
-    "question_id": 2, "answer": "15,115,823,000 shares"
-  },
-  {
-    "question_id": 3, "answer": "$96,662 million"
-  },
-  {
-    "question_id": 4, "answer": "November 1, 2024"
-  },
-  {
-    "question_id": 5, "answer": "No. Checkmark indicates 'No' under Item 1B"
-  },
-  {
-    "question_id": 6, "answer": "$96,773 million"
-  },
-  {
-    "question_id": 7, "answer": "∼84% ($81,924M / $96,773M)"
-  },
-  {
-    "question_id": 8, "answer": "Central to strategy, innovation, leadership; loss could disrupt"
-  },
-  {
-    "question_id": 9, "answer": "Model S, Model 3, Model X, Model Y, Cybertruck"
-  },
-  {
-    "question_id": 10, "answer": "Finance solar systems with investors; customers sign PPAs"
-  },
-  {
-    "question_id": 11, "answer": "This question cannot be answered based on the provided documents"
-  },
-  {
-    "question_id": 12, "answer": "This question cannot be answered based on the provided documents"
-  },
-  {
-    "question_id": 13, "answer": "This question cannot be answered based on the provided documents"
-  }]
+ground_truth = [{"question_id": 1, "answer": "$391,036 million"},
+                {"question_id": 2, "answer": "15,115,823,000 shares"},
+                {"question_id": 3, "answer": "$96,662 million"},
+                {"question_id": 4, "answer": "November 1, 2024"},
+                {"question_id": 5, "answer": "No. Checkmark indicates 'No' under Item 1B"},
+                {"question_id": 6, "answer": "$96,773 million"},
+                {"question_id": 7, "answer": "∼84% ($81,924M / $96,773M)"},
+                {"question_id": 8, "answer": "Central to strategy, innovation, leadership; loss could disrupt"},
+                {"question_id": 9, "answer": "Model S, Model 3, Model X, Model Y, Cybertruck"},
+                {"question_id": 10, "answer": "Finance solar systems with investors; customers sign PPAs"},
+                {"question_id": 11, "answer": "This question cannot be answered based on the provided documents"},
+                {"question_id": 12, "answer": "This question cannot be answered based on the provided documents"},
+                {"question_id": 13, "answer": "This question cannot be answered based on the provided documents"}]
 
 # Compare prediction vs ground truth
 truth_vs_prediction = []

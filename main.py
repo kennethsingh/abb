@@ -145,14 +145,6 @@ def format_prompt(query, context):
   {query}
   """
 
-# def call_llm(prompt):
-#   output = generator(
-#       prompt,
-#       max_new_tokens=1000,
-#       temperature=0,
-#       do_sample=False)
-#   return output[0]["generated_text"][len(prompt):]
-
 
 import torch
 
@@ -175,19 +167,7 @@ def call_answer_llm(prompt, max_new_tokens=300):
         skip_special_tokens=True
     )
 
-# def answer_question(query):
-#   docs = retriever.invoke(query)
 
-#   context = "\n\n".join([
-#       f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']}]\n{doc.page_content}"
-#       for doc in docs
-#   ])
-
-#   prompt = format_prompt(query, context)
-
-#   answer = call_llm(prompt)
-
-#   return answer, docs
 
 def answer_question(query: str) -> dict:
   """
@@ -203,7 +183,7 @@ def answer_question(query: str) -> dict:
   # Your RAG logic here
   docs = retriever.invoke(query)
 
-  docs = rerank_documents(query, docs, top_k=5)
+  docs = rerank_documents(query, docs, top_k=1)
 
   # print(docs[0].metadata)
   sources =[]
@@ -239,13 +219,7 @@ questions = [
 {"question_id": 13, "question": "What color is Teslas headquarters painted?"}
 ]
 
-# for i in range(len(questions)):
-#   question = questions[i]['question']
-#   answer, docs = answer_question(question)
-#   print(f"Question: {question}")
-#   print(f"Answer: {answer}")
-#   print(f"Time elapsed: {time.perf_counter() - start:.2f} seconds")
-#   print("="*80, "\n")
+
 
 print("Getting answers for the 13 questions")
 
@@ -259,26 +233,11 @@ for question in questions:
   response['question_id'] = question_id
   results.append(response)
 
-  # if "this question cannot be answered based on the provided documents" in answer.lower():
-  #   answer_text = "This question cannot be answered based on the provided documents"
-  #   sources = []
-  # else:
-  #   answer_text = answer.strip()
-  #   sources = [doc.metadata['document'] for doc in docs]
 
-  # results.append({
-  #   "question_id": question_id,
-  #   "answer": answer_text,
-  #   "sources": sources
-  # })
 
 print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
 
-# for i in results:
-#   print(i["question_id"])
-#   print(i["answer"])
-#   print(i["sources"])
-#   print("="*200, "\n")
+
 
 print("Answers received")
 
@@ -422,14 +381,6 @@ def call_eval_llm(prompt, max_new_tokens=10):
 def llm_judge(question, ground_truth, prediction):
   prompt = build_eval_prompt(question, ground_truth, prediction)
 
-  # output = generator(
-  #   prompt,
-  #   max_new_tokens=10,
-  #   temperature=0,
-  #   do_sample=False
-  # )
-
-  # verdict = output[0]["generated_text"][len(prompt):].strip()
   verdict = call_eval_llm(prompt, max_new_tokens=10)
 
   return verdict.strip()

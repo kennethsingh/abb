@@ -188,11 +188,11 @@ def answer_question(query: str) -> dict:
   # print(docs[0].metadata)
   sources =[]
   for doc in docs:
-    sources.append((doc.metadata['document'], "Item ??", f"p. {doc.metadata['page'].astype(int)+1}"))
+    sources.append((doc.metadata['document'], "Item ??", f"p. {doc.metadata['page']+1}"))
     
 
   context = "\n\n".join([
-      f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page'].astype(int)+1}]\n{doc.page_content}"
+      f"[Source: {doc.metadata['document']}, Page: {doc.metadata['page']+1}]\n{doc.page_content}"
       for doc in docs
   ])
 

@@ -82,7 +82,7 @@ rerank_model = AutoModelForSequenceClassification.from_pretrained(
    )
 rerank_model.eval()
 
-def rerank_documents(query, docs, top_k=5):
+def rerank_documents(query, docs, top_k=10):
    """
    Rerank retrieved documents using cross-encoder and return top_k documents
    """

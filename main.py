@@ -289,11 +289,12 @@ print("Getting answers for the 13 questions")
 
 import json
 results = []
-for question in questions:
+for question in rephrased_questions:
   question_id = question['question_id']
   question_text = question['question']
+  rephrased_question_text = question['rephrased_question']
 
-  response = answer_question(question_text)
+  response = answer_question(rephrased_question_text)
   response['question_id'] = question_id
   results.append(response)
 
@@ -457,14 +458,16 @@ for result in results:
   sources = result["sources"]
   
 
-  question_text = next(q["question"] for q in questions if q["question_id"]==question_id)
+  question_text = next(q["question"] for q in rephrased_questions if q["question_id"]==question_id)
+  rephrased_question_text = next(q["rephrased_question"] for q in rephrased_questions if q["question_id"]==question_id)
   ground_truth_answer = next(gt["answer"] for gt in ground_truth if gt["question_id"]==question_id)
 
-  verdict = llm_judge(question_text, ground_truth_answer, prediction)
+  verdict = llm_judge(rephrased_question_text, ground_truth_answer, prediction)
 
   llm_eval_results.append({
     "question_id": question_id,
     "question": question_text,
+    "rephrased_question": rephrased_question_text,
     "ground_truth": ground_truth_answer,
     "prediction": prediction,
     "sources": sources,

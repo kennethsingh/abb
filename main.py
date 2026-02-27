@@ -355,7 +355,7 @@ for result in results:
   truth_vs_prediction.append({
     "question_id": question_id,
     "question": question_text,
-    "rephrased_question": rephrased_question_text,
+    # "rephrased_question": rephrased_question_text,
     "ground_truth": ground_truth_answer,
     "prediction": prediction,
     "sources": sources

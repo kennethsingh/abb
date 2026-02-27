@@ -123,7 +123,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
 # model_id = "openai/gpt-oss-20b"
-model_id = "Qwen/Qwen2.5-7B-Instruct"
+# model_id = "Qwen/Qwen2.5-7B-Instruct"
+model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -310,6 +311,7 @@ for question in rephrased_questions:
   question_text = question['question']
   rephrased_question_text = question['rephrased_question']
 
+  response = answer_question(question_text)
   response = answer_question(rephrased_question_text)
   response['question_id'] = question_id
   results.append(response)

@@ -39,9 +39,9 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 chunked_docs = text_splitter.split_documents(all_docs)
 
-for doc in chunked_docs:
-   if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
-      print(f"Page 20 content: {doc.page_content}")
+# for doc in chunked_docs:
+#    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
+#       print(f"Page 20 content: {doc.page_content}")
 
 print("Chunking completed")
 
@@ -71,9 +71,9 @@ vector_store = FAISS.from_documents(
 
 retriever = vector_store.as_retriever(search_kwargs={"k":20})
 
-# docs = retriever.invoke("Does Apple have any unresolved staff comments from the SEC as of this filing? How do you know?")
-# for doc in docs:
-#    print(f"Retrieved Page: {doc.metadata['page']}")
+docs = retriever.invoke("unresolved staff comments")
+for doc in docs:
+   print(f"Retrieved Page: {doc.metadata['page']}")
 
 # Reranking
 from transformers import AutoTokenizer, AutoModelForSequenceClassification

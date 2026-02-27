@@ -142,13 +142,19 @@ model = AutoModelForCausalLM.from_pretrained(
 def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
-  Reason step by step and answer using only the provided context.
+  Answer using only the provided context.
   If answer is not found, say "This question cannot be answered based on the provided documents."
   Finally, output only the answer in one sentence.
 
+  Example 1:
   Question: When was Tesla founder?
   Answer: 2003
-  
+
+  Example 2:
+  Question: Where is Apple's headquarters?
+  Answer: USA
+
+  Now answer this question:
   Context:
   {context}
 

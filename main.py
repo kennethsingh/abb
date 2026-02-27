@@ -144,12 +144,18 @@ def format_prompt(query, context):
   You are a financial analyst assistant.
   Reason step by step and answer using only the provided context.
   If answer is not found, say "This question cannot be answered based on the provided documents."
+  Finally, output only the answer in one sentence.
+
+  Question: When was Tesla founder?
+  Answer: 2003
   
   Context:
   {context}
 
   Question:
   {query}
+
+  Answer:
   """
 
 

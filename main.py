@@ -249,18 +249,8 @@ Your task is to convert a natural language question into a SHORT keyword search 
 Rules:
 - DO NOT answer the question.
 - DO NOT provide explanations.
-- ONLY output keywords.
-- Output must be under 10 words.
 - Focus on section titles or core financial terms.
 - Remove conversational phrasing.
-
-Example 1:
-Question: Does the company face any legal proceedings?
-Search query: legal proceedings
-
-Example 2:
-Question: What risk factors could affect Apple’s business?
-Search query: risk factors
 
 Now rewrite this:
 
@@ -268,7 +258,7 @@ Question: {question}
 Search query:
 """
 
-def call_rephrase_llm(prompt, max_new_tokens=10):
+def call_rephrase_llm(prompt, max_new_tokens=50):
     inputs = rephrase_tokenizer(
         prompt,
         return_tensors="pt"

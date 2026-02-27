@@ -242,23 +242,30 @@ rephrase_model = AutoModelForCausalLM.from_pretrained(
 
 def build_rephrase_prompt(question):
   return f"""
-You are a retrieval query optimizer.
+You are a retrieval query optimizer for SEC 10-K filings.
 
-Convert the QUESTION into a SHORT keyword search query.
+Your task is to convert a natural language question into a SHORT keyword search query.
 
-STRICT RULES:
+Rules:
 - DO NOT answer the question.
-- DO NOT add any information.
-- DO NOT mention years not in the question.
-- DO NOT explain.
-- Output ONLY keywords.
-- Maximum 8 words.
-- No sentences.
+- DO NOT provide explanations.
+- ONLY output keywords.
+- Output must be under 10 words.
+- Focus on section titles or core financial terms.
+- Remove conversational phrasing.
 
-QUESTION:
-<<<{question}>>>
+Example 1:
+Question: Does the company face any legal proceedings?
+Search query: legal proceedings
 
-KEYWORDS:
+Example 2:
+Question: What risk factors could affect Apple’s business?
+Search query: risk factors
+
+Now rewrite this:
+
+Question: {question}
+Search query:
 """
 
 def call_rephrase_llm(prompt, max_new_tokens=10):
@@ -283,7 +290,8 @@ def call_rephrase_llm(prompt, max_new_tokens=10):
 rephrased_questions = []
 for question in questions:
    question_text = question["question"]
-   rephrased_question = call_rephrase_llm(question_text)
+   question_prompt = build_rephrase_prompt(question_text)
+   rephrased_question = call_rephrase_llm(question_prompt)
    question["rephrased_question"] = rephrased_question
    rephrased_questions.append(question)
 

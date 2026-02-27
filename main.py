@@ -82,7 +82,7 @@ rerank_model = AutoModelForSequenceClassification.from_pretrained(
    )
 rerank_model.eval()
 
-def rerank_documents(query, docs, top_k=10):
+def rerank_documents(query, docs, top_k=5):
    """
    Rerank retrieved documents using cross-encoder and return top_k documents
    """
@@ -183,7 +183,7 @@ def answer_question(query: str) -> dict:
   # Your RAG logic here
   docs = retriever.invoke(query)
 
-  docs = rerank_documents(query, docs, top_k=5)
+  docs = rerank_documents(query, docs, top_k=10)
 
   # print(docs[0].metadata)
   sources =[]

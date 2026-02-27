@@ -268,7 +268,7 @@ Question: {question}
 Search query:
 """
 
-def call_rephrase_llm(prompt, max_new_tokens=100):
+def call_rephrase_llm(prompt, max_new_tokens=10):
     inputs = rephrase_tokenizer(
         prompt,
         return_tensors="pt"

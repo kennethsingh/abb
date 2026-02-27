@@ -121,9 +121,9 @@ def rerank_documents(query, docs, top_k=5):
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+# model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
-# model_id = "openai/gpt-oss-20b"
+model_id = "openai/gpt-oss-20b"
 # model_id = "Qwen/Qwen2.5-7B-Instruct"
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
 # model_id = "deepseek-ai/DeepSeek-R1-Zero"
@@ -152,11 +152,11 @@ def format_prompt(query, context):
 
   Example 1:
   Question: In which year was Tesla founder?
-  Answer: Tesla was founded in the year 2003
+  Answer: Tesla was founded in the year 2003.
 
   Example 2:
   Question: Where is Apple's headquarters?
-  Answer: Apple headquarters is in USA
+  Answer: Apple headquarters is in USA.
 
   Now answer this question:
   Context:
@@ -301,7 +301,7 @@ for question in questions:
    question["rephrased_question"] = rephrased_question
    rephrased_questions.append(question)
 
-print(f"Rephrased Questions: {rephrased_questions}")
+# print(f"Rephrased Questions: {rephrased_questions}")
 
 
 

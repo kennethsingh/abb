@@ -71,9 +71,9 @@ vector_store = FAISS.from_documents(
 
 retriever = vector_store.as_retriever(search_kwargs={"k":20})
 
-docs = retriever.invoke("unresolved staff comments")
-for doc in docs:
-   print(f"Retrieved Page: {doc.metadata['page']}")
+# docs = retriever.invoke("unresolved staff comments")
+# for doc in docs:
+#    print(f"Retrieved Page: {doc.metadata['page']}")
 
 # Reranking
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -190,7 +190,7 @@ def answer_question(query: str) -> dict:
   # Your RAG logic here
   docs = retriever.invoke(query)
 
-  docs = rerank_documents(query, docs, top_k=10)
+  docs = rerank_documents(query, docs, top_k=5)
 
   # print(docs[0].metadata)
   sources =[]
@@ -226,6 +226,62 @@ questions = [
 {"question_id": 12, "question": "Who is the CFO of Apple as of 2025?"},
 {"question_id": 13, "question": "What color is Teslas headquarters painted?"}
 ]
+
+# ==================================================
+# REPHRASE THE QUESTIONS FOR BETTER SEMANTIC MATCHING WITH THE DOC CHUNKS
+# ==================================================
+rephrase_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
+
+rephrase_tokenizer = AutoTokenizer.from_pretrained(rephrase_model_id)
+
+rephrase_model = AutoModelForCausalLM.from_pretrained(
+    rephrase_model_id,
+    device_map="auto" if device=="cuda" else None,
+    dtype=torch.bfloat16
+)
+
+def build_rephrase_prompt(question):
+  return f"""
+You are helping with retrieval from SEC 10-K filings.
+Rewrite the question into a short keyword-style search query matching section titles in financial filings.
+
+Keep only the most important section-level terms.
+Do not include full sentences.
+Do not explain.
+
+Question:
+{question}
+
+Rephrased question:
+"""
+
+def call_rephrase_llm(prompt, max_new_tokens=100):
+    inputs = rephrase_tokenizer(
+        prompt,
+        return_tensors="pt"
+    ).to(rephrase_model.device)
+
+    with torch.no_grad():
+        output = rephrase_model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False
+            # temperature=0.5
+        )
+
+    return rephrase_tokenizer.decode(
+        output[0][inputs["input_ids"].shape[1]:],
+        skip_special_tokens=True
+    )
+
+rephrased_questions = []
+for question in questions:
+   question_text = question["question"]
+   rephrased_question = call_rephrase_llm(question_text)
+   question["rephrased_question"] = rephrased_question
+   rephrased_questions.append(question)
+
+print(f"Rephrased Questions: {rephrased_questions}")
 
 
 
@@ -417,10 +473,10 @@ for result in results:
 
 print(pd.DataFrame(llm_eval_results).to_string())
 
-for i in llm_eval_results:
-  print(f"Question ID: {i["question_id"]}")
-  print(f"Verdict: {i['verdict']}")
-  print("="*200, "\n\n")
+# for i in llm_eval_results:
+#   print(f"Question ID: {i["question_id"]}")
+#   print(f"Verdict: {i['verdict']}")
+#   print("="*200, "\n\n")
 
 # Save llm evaluation dataframe
 llm_evaluation_df = pd.DataFrame(llm_eval_results)

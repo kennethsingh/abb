@@ -242,17 +242,30 @@ rephrase_model = AutoModelForCausalLM.from_pretrained(
 
 def build_rephrase_prompt(question):
   return f"""
-You are helping with retrieval from SEC 10-K filings.
-Rewrite the question into a short keyword-style search query matching section titles in financial filings.
+You are a retrieval query optimizer for SEC 10-K filings.
 
-Keep only the most important section-level terms.
-Do not include full sentences.
-Do not explain.
+Your task is to convert a natural language question into a SHORT keyword search query.
 
-Question:
-{question}
+Rules:
+- DO NOT answer the question.
+- DO NOT provide explanations.
+- ONLY output keywords.
+- Output must be under 10 words.
+- Focus on section titles or core financial terms.
+- Remove conversational phrasing.
 
-Rephrased question:
+Example 1:
+Question: Does the company face any legal proceedings?
+Search query: legal proceedings
+
+Example 2:
+Question: What risk factors could affect Apple’s business?
+Search query: risk factors
+
+Now rewrite this:
+
+Question: {question}
+Search query:
 """
 
 def call_rephrase_llm(prompt, max_new_tokens=100):
@@ -380,6 +393,7 @@ for result in results:
     "sources": sources,
     "semantic_similarity": sim_score
   })
+
 
 import pandas as pd
 # print(pd.DataFrame(evaluation_result).to_string())

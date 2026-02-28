@@ -32,7 +32,7 @@ tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
 print("Extracted data from PDFs")
 
 # Remove table of contents
-apple_doc = [doc for doc in apple_doc if doc.metadata["page"] not in [2, 54, 55, 56]]
+apple_doc = [doc for doc in apple_doc if doc.metadata["page"] != 2]
 tesla_doc = [doc for doc in tesla_doc if doc.metadata["page"] != 2]
 all_docs = apple_doc + tesla_doc
 
@@ -283,7 +283,7 @@ def answer_question(query: str, company: str) -> dict:
   # if "item 1b" in prompt.lower():
   #    print(f"CHECK METADATA: {prompt}")
 
-  if query == "What was Apples total net sales for the fiscal year ended September 28, 2024?":
+  if query == "What was Apples total revenue for the fiscal year ended September 28, 2024?":
      print(f"CHECK CONTEXTS: {prompt}")
 
   answer = call_answer_llm(prompt)
@@ -293,7 +293,7 @@ print("Question answer function created")
 
 
 questions = [
-{"question_id": 1, "question": "What was Apples total net sales for the fiscal year ended September 28, 2024?"},
+{"question_id": 1, "question": "What was Apples total revenue for the fiscal year ended September 28, 2024?"},
 {"question_id": 2, "question": "How many shares of common stock were issued and outstanding as of October 18, 2024?"},
 {"question_id": 3, "question": "What is the total amount of term debt (current + non-current) reported by Apple as of September 28, 2024?"},
 {"question_id": 4, "question": "On what date was Apples 10-K report for 2024 signed and filed with the SEC?"},

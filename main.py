@@ -32,7 +32,7 @@ tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
 print("Extracted data from PDFs")
 
 # Remove table of contents
-apple_doc = [doc for doc in apple_doc if doc.metadata["page"] != 2]
+apple_doc = [doc for doc in apple_doc if doc.metadata["page"] not in [2, 54, 55, 56]]
 tesla_doc = [doc for doc in tesla_doc if doc.metadata["page"] != 2]
 all_docs = apple_doc + tesla_doc
 

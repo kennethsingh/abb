@@ -103,9 +103,21 @@ def chunk_docs_by_paragraph(docs, min_chunk_size=400):
 
     return chunked_docs
 
+
 chunked_docs_apple = chunk_docs_by_paragraph(apple_doc)
 chunked_docs_tesla = chunk_docs_by_paragraph(tesla_doc)
 chunked_docs_combined = chunk_docs_by_paragraph(all_docs)
+
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=150
+)
+
+chunked_docs_apple = text_splitter.split_documents(chunked_docs_apple)
+chunked_docs_tesla = text_splitter.split_documents(chunked_docs_apple)
+chunked_docs_combined = text_splitter.split_documents(chunked_docs_apple)
+
+
 
 print("Chunking completed")
 

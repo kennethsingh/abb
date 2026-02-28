@@ -30,7 +30,7 @@ import re
 from langchain_core.documents import Document
 
 def split_by_item_headers(docs):
-    pattern = r"(Item\s+\d+[A-Z]?\.?.*?)\n"
+    pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
     structured_docs = []
 
     for doc in docs:
@@ -68,6 +68,6 @@ chunked_docs_combined = text_splitter.split_documents(all_docs)
 
 for i in range(len(chunked_docs_apple)):
   if chunked_docs_apple[i].metadata["page"] in [7]:
-    print(f"PAGE {chunked_docs_apple[i].metadata["page"]}", "\n", "="*100)
+    print(f"PAGE {chunked_docs_apple[i].metadata["page"]+1}", "\n", "="*100)
     print(chunked_docs_apple[i].page_content, "\n", "="*100)
 

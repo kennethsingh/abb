@@ -36,7 +36,7 @@ import re
 from langchain_core.documents import Document
 
 def split_by_item_headers(docs):
-    pattern = r"(Item\s+\d+[A-Z]?\.?.*?)\n"
+    pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
     structured_docs = []
 
     for doc in docs:

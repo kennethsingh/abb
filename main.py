@@ -293,7 +293,7 @@ print("Question answer function created")
 
 
 questions = [
-{"question_id": 1, "question": "What was Apples total revenue for the fiscal year ended September 28, 2024?"},
+{"question_id": 1, "question": "What was Apples total net sales for the fiscal year ended September 28, 2024?"},
 {"question_id": 2, "question": "How many shares of common stock were issued and outstanding as of October 18, 2024?"},
 {"question_id": 3, "question": "What is the total amount of term debt (current + non-current) reported by Apple as of September 28, 2024?"},
 {"question_id": 4, "question": "On what date was Apples 10-K report for 2024 signed and filed with the SEC?"},

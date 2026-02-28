@@ -79,9 +79,9 @@ def split_by_item_headers(docs):
 
     return structured_docs
 
-apple_doc = split_by_item_headers(apple_doc)
-tesla_doc = split_by_item_headers(tesla_doc)
-all_docs = split_by_item_headers(all_docs)
+chunked_docs_apple = split_by_item_headers(chunked_docs_apple)
+chunked_docs_tesla = split_by_item_headers(chunked_docs_tesla)
+chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
 
 print("Chunking completed")
 

@@ -288,7 +288,7 @@ def answer_question(query: str, company: str) -> dict:
   else:
      docs = retriever_combined.invoke(query)
 
-  docs = rerank_documents(query, docs, top_k=5)
+  docs = rerank_documents(query, docs, top_k=10)
 
   # print(docs[0].metadata)
   sources =[]

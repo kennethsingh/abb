@@ -31,6 +31,38 @@ all_docs = apple_doc + tesla_doc
 
 print("Extracted data from PDFs")
 
+
+import re
+from langchain_core.documents import Document
+
+def split_by_item_headers(docs):
+    pattern = r"(Item\s+\d+[A-Z]?\.?.*?)\n"
+    structured_docs = []
+
+    for doc in docs:
+        text = doc.page_content
+
+        splits = re.split(pattern, text)
+
+        # re.split keeps headers separately, so recombine
+        for i in range(1, len(splits), 2):
+            header = splits[i].strip()
+            content = splits[i+1].strip() if i+1 < len(splits) else ""
+
+            structured_docs.append(
+                Document(
+                    page_content=header + "\n" + content,
+                    metadata=doc.metadata
+                )
+            )
+
+    return structured_docs
+
+apple_doc = split_by_item_headers(apple_doc)
+tesla_doc = split_by_item_headers(tesla_doc)
+all_docs = split_by_item_headers(all_docs)
+
+
 # Chunking
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,

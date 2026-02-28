@@ -267,7 +267,9 @@ def answer_question(query: str, company: str) -> dict:
     
 
   context = "\n\n".join([
-      f"[Source: {doc.metadata['document']}, Page: {int(doc.metadata['page'])+1}]\n{doc.page_content}"
+     "START CHUNK...",
+      f"[Source: {doc.metadata['document']}, Page: {int(doc.metadata['page'])+1}]\n{doc.page_content}",
+      "END CHUNK..."
       for doc in docs
   ])
 

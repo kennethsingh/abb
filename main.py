@@ -39,32 +39,32 @@ all_docs = apple_doc + tesla_doc
 import re
 from langchain_core.documents import Document
 
-def split_by_item_headers(docs):
-    pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
-    structured_docs = []
+# def split_by_item_headers(docs):
+#     pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
+#     structured_docs = []
 
-    for doc in docs:
-        text = doc.page_content
+#     for doc in docs:
+#         text = doc.page_content
 
-        splits = re.split(pattern, text)
+#         splits = re.split(pattern, text)
 
-        # re.split keeps headers separately, so recombine
-        for i in range(1, len(splits), 2):
-            header = splits[i].strip()
-            content = splits[i+1].strip() if i+1 < len(splits) else ""
+#         # re.split keeps headers separately, so recombine
+#         for i in range(1, len(splits), 2):
+#             header = splits[i].strip()
+#             content = splits[i+1].strip() if i+1 < len(splits) else ""
 
-            structured_docs.append(
-                Document(
-                    page_content=header + "\n" + content,
-                    metadata=doc.metadata
-                )
-            )
+#             structured_docs.append(
+#                 Document(
+#                     page_content=header + "\n" + content,
+#                     metadata=doc.metadata
+#                 )
+#             )
 
-    return structured_docs
+#     return structured_docs
 
-apple_doc = split_by_item_headers(apple_doc)
-tesla_doc = split_by_item_headers(tesla_doc)
-all_docs = split_by_item_headers(all_docs)
+# apple_doc = split_by_item_headers(apple_doc)
+# tesla_doc = split_by_item_headers(tesla_doc)
+# all_docs = split_by_item_headers(all_docs)
 
 
 # Chunking
@@ -118,7 +118,6 @@ vector_store_combined = FAISS.from_documents(
 retriever_apple = vector_store_apple.as_retriever(search_kwargs={"k":20})
 retriever_tesla = vector_store_tesla.as_retriever(search_kwargs={"k":20})
 retriever_combined = vector_store_combined.as_retriever(search_kwargs={"k":20})
-
 
 
 # docs = retriever.invoke("unresolved staff comments")

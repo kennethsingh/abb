@@ -56,16 +56,28 @@ chunked_docs_combined = text_splitter.split_documents(all_docs)
 #    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
 #       print(f"Page 20 content: {doc.page_content}")
 
+import re
+from langchain_core.documents import Document
+
 def split_by_item_headers(docs):
     pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
     structured_docs = []
 
     for doc in docs:
         text = doc.page_content
-
         splits = re.split(pattern, text)
 
-        # re.split keeps headers separately, so recombine
+        # If no Item header found → keep full page
+        if len(splits) <= 1:
+            structured_docs.append(
+                Document(
+                    page_content=text.strip(),
+                    metadata=doc.metadata.copy()
+                )
+            )
+            continue
+
+        # If headers found → recombine properly
         for i in range(1, len(splits), 2):
             header = splits[i].strip()
             content = splits[i+1].strip() if i+1 < len(splits) else ""
@@ -73,7 +85,7 @@ def split_by_item_headers(docs):
             structured_docs.append(
                 Document(
                     page_content=header + "\n" + content,
-                    metadata=doc.metadata
+                    metadata=doc.metadata.copy()
                 )
             )
 

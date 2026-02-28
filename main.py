@@ -394,19 +394,19 @@ print("Answers received")
 
 print("Evaluating output")
 # Evaluation
-ground_truth = [{"question_id": 1, "answer": "$391,036 million"},
-                {"question_id": 2, "answer": "15,115,823,000 shares"},
-                {"question_id": 3, "answer": "$96,662 million"},
-                {"question_id": 4, "answer": "November 1, 2024"},
-                {"question_id": 5, "answer": "No. Checkmark indicates 'No' under Item 1B"},
-                {"question_id": 6, "answer": "$96,773 million"},
-                {"question_id": 7, "answer": "∼84% ($81,924M / $96,773M)"},
-                {"question_id": 8, "answer": "Central to strategy, innovation, leadership; loss could disrupt"},
-                {"question_id": 9, "answer": "Model S, Model 3, Model X, Model Y, Cybertruck"},
-                {"question_id": 10, "answer": "Finance solar systems with investors; customers sign PPAs"},
-                {"question_id": 11, "answer": "This question cannot be answered based on the provided documents"},
-                {"question_id": 12, "answer": "This question cannot be answered based on the provided documents"},
-                {"question_id": 13, "answer": "This question cannot be answered based on the provided documents"}]
+ground_truth = [{"question_id": 1, "answer": "$391,036 million", "source": "Apple 10-K, Item 8, p. 282"},
+                {"question_id": 2, "answer": "15,115,823,000 shares", "source": "Apple 10-K, first paragraph"},
+                {"question_id": 3, "answer": "$96,662 million", "source": "Apple 10-K, Item 8, Note 9, p. 394"},
+                {"question_id": 4, "answer": "November 1, 2024", "source": "Apple 10-K, Signature page"},
+                {"question_id": 5, "answer": "No. Checkmark indicates 'No' under Item 1B", "source": "Apple 10-K, Item 1B, p. 176"},
+                {"question_id": 6, "answer": "$96,773 million", "source": "Tesla 10-K, Item 7"},
+                {"question_id": 7, "answer": "∼84% ($81,924M / $96,773M)", "source": "Tesla 10-K, Item 7"},
+                {"question_id": 8, "answer": "Central to strategy, innovation, leadership; loss could disrupt", "source": "Tesla 10-K, Item 1A"},
+                {"question_id": 9, "answer": "Model S, Model 3, Model X, Model Y, Cybertruck", "source": "Tesla 10-K, Item 1"},
+                {"question_id": 10, "answer": "Finance solar systems with investors; customers sign PPAs", "source": "Tesla 10-K, Item 7"},
+                {"question_id": 11, "answer": "This question cannot be answered based on the provided documents", "source": "N/A"},
+                {"question_id": 12, "answer": "This question cannot be answered based on the provided documents", "source": "N/A"},
+                {"question_id": 13, "answer": "This question cannot be answered based on the provided documents", "source": "N/A"}]
 
 # Compare prediction vs ground truth
 truth_vs_prediction = []

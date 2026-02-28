@@ -106,17 +106,7 @@ vector_store_apple = FAISS.from_documents(
     chunked_docs_apple,
     embedding_model
 )
-vector_store_tesla = FAISS.from_documents(
-    chunked_docs_tesla,
-    embedding_model
-)
-vector_store_combined = FAISS.from_documents(
-    chunked_docs_combined,
-    embedding_model
-)
 
 retriever_apple = vector_store_apple.as_retriever(search_kwargs={"k":20})
-retriever_tesla = vector_store_tesla.as_retriever(search_kwargs={"k":20})
-retriever_combined = vector_store_combined.as_retriever(search_kwargs={"k":20})
 
 print(retriever_apple.invoke("What was Apples total revenue for the fiscal year ended September 28, 2024?"))

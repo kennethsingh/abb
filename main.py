@@ -27,7 +27,6 @@ def add_metadata(docs, document_name):
 
 apple_doc = add_metadata(apple_doc, "Apple 10-K")
 tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
-
 all_docs = apple_doc + tesla_doc
 
 print("Extracted data from PDFs")
@@ -38,7 +37,9 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=150
 )
 
-chunked_docs = text_splitter.split_documents(all_docs)
+chunked_docs_apple = text_splitter.split_documents(apple_doc)
+chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
+chunked_docs_combined = text_splitter.split_documents(all_docs)
 
 # for doc in chunked_docs:
 #    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
@@ -65,12 +66,24 @@ print("Embedding completed")
 # Put embeddings in vector db
 from langchain_community.vectorstores import FAISS
 
-vector_store = FAISS.from_documents(
-    chunked_docs,
+vector_store_apple = FAISS.from_documents(
+    chunked_docs_apple,
+    embedding_model
+)
+vector_store_tesla = FAISS.from_documents(
+    chunked_docs_tesla,
+    embedding_model
+)
+vector_store_combined = FAISS.from_documents(
+    chunked_docs_combined,
     embedding_model
 )
 
-retriever = vector_store.as_retriever(search_kwargs={"k":20})
+retriever_apple = vector_store_apple.as_retriever(search_kwargs={"k":20})
+retriever_tesla = vector_store_tesla.as_retriever(search_kwargs={"k":20})
+retriever_combined = vector_store_combined.as_retriever(search_kwargs={"k":20})
+
+
 
 # docs = retriever.invoke("unresolved staff comments")
 # for doc in docs:
@@ -194,7 +207,7 @@ def call_answer_llm(prompt, max_new_tokens=50):
 
 
 
-def answer_question(query: str) -> dict:
+def answer_question(query: str, company: str) -> dict:
   """
   Answers a question using the RAG pipeline.
   Args:
@@ -206,7 +219,12 @@ def answer_question(query: str) -> dict:
   "sources": ["Apple 10-K", "Item 8", "p. 28"] # Empty list if refused}
   """
   # Your RAG logic here
-  docs = retriever.invoke(query)
+  if company == "apple":
+     docs = retriever_apple.invoke(query)
+  elif company == "tesla":
+     docs = retriever_tesla.invoke(query)
+  else:
+     docs = retriever_combined.invoke(query)
 
   docs = rerank_documents(query, docs, top_k=5)
 
@@ -316,8 +334,15 @@ for question in rephrased_questions:
   question_text = question['question']
   rephrased_question_text = question['rephrased_question']
 
-  response = answer_question(question_text)
-  response = answer_question(rephrased_question_text)
+  if "apple" in question_text.lower():
+     response = answer_question(query=question_text, company="apple")
+     #  response = answer_question(rephrased_question_text)
+  elif "tesla" in question_text.lower():
+     response = answer_question(query=question_text, company="tesla")
+     #  response = answer_question(rephrased_question_text)
+  else:
+     response = answer_question(query=question_text, company="combined")
+  
   response['question_id'] = question_id
   results.append(response)
 

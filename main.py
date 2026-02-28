@@ -36,16 +36,13 @@ import re
 from langchain_core.documents import Document
 
 def split_by_item_headers(docs):
-    # pattern = r"\nItem\s+\d+[A-Z]?\."
-    pattern = r"\n(?=Item\s+\d+[A-Z]?\.)"
-
+    pattern = r"(Item\s+\d+[A-Z]?\.?.*?)\n"
     structured_docs = []
 
     for doc in docs:
         text = doc.page_content
 
-        # splits = re.split(pattern, text)
-        splits = re.split(pattern, text, flags=re.IGNORECASE)
+        splits = re.split(pattern, text)
 
         # re.split keeps headers separately, so recombine
         for i in range(1, len(splits), 2):

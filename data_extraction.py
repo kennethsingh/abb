@@ -67,7 +67,7 @@ chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
 chunked_docs_combined = text_splitter.split_documents(all_docs)
 
 for i in range(len(chunked_docs_apple)):
-  if chunked_docs_apple[i].metadata["page"] in [7]:
+  if chunked_docs_apple[i].metadata["page"] in [19]:
     print(f"PAGE {chunked_docs_apple[i].metadata["page"]+1}", "\n", "="*100)
     print(chunked_docs_apple[i].page_content, "\n", "="*100)
 

@@ -273,6 +273,9 @@ def answer_question(query: str, company: str) -> dict:
 
   prompt = format_prompt(query, context)
 
+  if "item 1b" in prompt.lower():
+     print(f"CHECK METADATA: {prompt}")
+
   answer = call_answer_llm(prompt)
   return {"answer": answer, "sources": sources}
 

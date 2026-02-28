@@ -283,7 +283,7 @@ def answer_question(query: str, company: str) -> dict:
   # if "item 1b" in prompt.lower():
   #    print(f"CHECK METADATA: {prompt}")
 
-  if query == "What was Apples total revenue for the fiscal year ended September 28, 2024?":
+  if query == "What was Apples total net sales for the fiscal year ended September 28, 2024?":
      print(f"CHECK CONTEXTS: {prompt}")
 
   answer = call_answer_llm(prompt)

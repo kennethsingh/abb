@@ -27,7 +27,7 @@ def add_metadata(docs, document_name):
 
 apple_doc = add_metadata(apple_doc, "Apple 10-K")
 tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
-# all_docs = apple_doc + tesla_doc
+
 
 print("Extracted data from PDFs")
 
@@ -36,88 +36,50 @@ apple_doc = [doc for doc in apple_doc if doc.metadata["page"] != 2]
 tesla_doc = [doc for doc in tesla_doc if doc.metadata["page"] != 2]
 all_docs = apple_doc + tesla_doc
 
-
 import re
-
-def reconstruct_paragraphs(text):
-    lines = text.split("\n")
-    paragraphs = []
-    current = ""
-
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-
-        if not current:
-            current = line
-            continue
-
-        # If previous line does not end with punctuation → likely wrapped
-        if not re.search(r"[.:;!?]$", current):
-            current += " " + line
-        # If next line starts lowercase → continuation
-        elif line and line[0].islower():
-            current += " " + line
-        else:
-            paragraphs.append(current.strip())
-            current = line
-
-    if current:
-        paragraphs.append(current.strip())
-
-    return paragraphs
-
 from langchain_core.documents import Document
 
-def chunk_docs_by_paragraph(docs, min_chunk_size=400):
-    chunked_docs = []
+def split_by_item_headers(docs):
+    pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
+    structured_docs = []
 
     for doc in docs:
-        paragraphs = reconstruct_paragraphs(doc.page_content)
+        text = doc.page_content
 
-        buffer = ""
-        for para in paragraphs:
-            # Skip tiny noise
-            if len(para.strip()) < 20:
-                continue
+        splits = re.split(pattern, text)
 
-            if len(buffer) + len(para) < min_chunk_size:
-                buffer += " " + para
-            else:
-                chunked_docs.append(
-                    Document(
-                        page_content=buffer.strip(),
-                        metadata=doc.metadata.copy()
-                    )
-                )
-                buffer = para
+        # re.split keeps headers separately, so recombine
+        for i in range(1, len(splits), 2):
+            header = splits[i].strip()
+            content = splits[i+1].strip() if i+1 < len(splits) else ""
 
-        if buffer:
-            chunked_docs.append(
+            structured_docs.append(
                 Document(
-                    page_content=buffer.strip(),
-                    metadata=doc.metadata.copy()
+                    page_content=header + "\n" + content,
+                    metadata=doc.metadata
                 )
             )
 
-    return chunked_docs
+    return structured_docs
+
+apple_doc = split_by_item_headers(apple_doc)
+tesla_doc = split_by_item_headers(tesla_doc)
+all_docs = split_by_item_headers(all_docs)
 
 
-chunked_docs_apple = chunk_docs_by_paragraph(apple_doc)
-chunked_docs_tesla = chunk_docs_by_paragraph(tesla_doc)
-chunked_docs_combined = chunk_docs_by_paragraph(all_docs)
-
+# Chunking
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,
     chunk_overlap=150
 )
 
-chunked_docs_apple = text_splitter.split_documents(chunked_docs_apple)
-chunked_docs_tesla = text_splitter.split_documents(chunked_docs_apple)
-chunked_docs_combined = text_splitter.split_documents(chunked_docs_apple)
+chunked_docs_apple = text_splitter.split_documents(apple_doc)
+chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
+chunked_docs_combined = text_splitter.split_documents(all_docs)
 
-
+# for doc in chunked_docs:
+#    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
+#       print(f"Page 20 content: {doc.page_content}")
 
 print("Chunking completed")
 
@@ -300,7 +262,7 @@ def answer_question(query: str, company: str) -> dict:
   else:
      docs = retriever_combined.invoke(query)
 
-  docs = rerank_documents(query, docs, top_k=10)
+  docs = rerank_documents(query, docs, top_k=5)
 
   # print(docs[0].metadata)
   sources =[]
@@ -474,62 +436,140 @@ truth_vs_prediction = pd.DataFrame(truth_vs_prediction)
 truth_vs_prediction.to_csv("truth_vs_prediction.csv", index = False)
 
 
-# def combine_pages_with_markers(docs):
-#    docs = sorted(docs, key=lambda x: x.metadata["page"])
+## Semantic similarity using Cosine similarity of embeddings
+# from sklearn.metrics.pairwise import cosine_similarity
+# import numpy as np
 
-#    full_text = ""
-#    for doc in docs:
-#       page_number = doc.metadata["page"] + 1
-#       full_text += f"\n\n<<PAGE: {page_number}>>\n"
-#       full_text += doc.page_content
-    
-#    return full_text
+# def semantic_similarity(prediction: str, ground_truth: str) -> float:
+#   """
+#   Computes cosine similarity between the LLM output and the actual answer
+#   """
+#   emb_pred = embedding_model.embed_query(prediction)
+#   emb_truth = embedding_model.embed_query(ground_truth)
 
-# apple_doc = combine_pages_with_markers(apple_doc)
-# tesla_doc = combine_pages_with_markers(tesla_doc)
+#   score = cosine_similarity([emb_pred], [emb_truth])[0][0]
 
-# import re
-# from langchain_core.documents import Document
+#   return float(score)
 
-# def split_by_item_headers(full_text, document_name):
-#    pattern = r"\n(?=Item\s+\d+[A-Z]?\.)"
-#    sections = re.split(pattern, full_text, flags=re.IGNORECASE)
+# evaluation_result = []
+# for result in results:
+#   question_id = result["question_id"]
+#   prediction = result["answer"]
+#   sources = result["sources"]
 
-#    structured_docs = []
+#   truth = next(item["answer"] for item in ground_truth if item["question_id"]==question_id)
 
-#    for section in sections:
-#       section = section.strip()
-#       if not section:
-#          continue
-      
-#       # Extract item number
-#       match = re.match(r"Item\s+(\d+[A-Z]?)\.", section, flags=re.IGNORECASE)
-#       item_number = match.group(1) if match else None
+#   sim_score = semantic_similarity(prediction, truth)
 
-#       # Extract page numbers from each section
-#       pages = re.findall(r"<<PAGE: (\d+)>>", section)
-#       pages = [int(p) for p in pages]
+#   evaluation_result.append({
+#     "question_id": question_id,
+#     "prediction": prediction,
+#     "ground_truth": truth,
+#     "sources": sources,
+#     "semantic_similarity": sim_score
+#   })
 
-#       if pages:
-#          page_start = min(pages)
-#          page_end = max(pages)
-#       else:
-#          page_start = None
-#          page_end = None
 
-#       # Remove page markers
-#       clean_section = re.sub(r"<<PAGE: \d+>>", "", section)
+# import pandas as pd
+# # print(pd.DataFrame(evaluation_result).to_string())
 
-#       structured_docs.append(Document(page_content=clean_section.strip(),
-#                                       metadata={
-#                                          "document": document_name,
-#                                          "item": item_number,
-#                                          "page_start": page_start,
-#                                          "page_end": page_end
-#                                       }))
-      
-#    return structured_docs
+# # Save semantice similarity evaluation dataframe
+# semantic_evaluation_df = pd.DataFrame(evaluation_result)
+# semantic_evaluation_df.to_csv("semantic_evaluation_df.csv", index=False)
 
-# apple_doc = split_by_item_headers(full_text=apple_doc, document_name="Apple 10-K")
+## LLM as the eveluator
+# eval_model_id = "mistralai/Mistral-7B-Instruct-v0.3"
 
-# print(apple_doc[3])
+# eval_tokenizer = AutoTokenizer.from_pretrained(eval_model_id)
+
+# eval_model = AutoModelForCausalLM.from_pretrained(
+#     eval_model_id,
+#     device_map="auto" if device=="cuda" else None,
+#     dtype=torch.bfloat16
+# )
+
+# def build_eval_prompt(question, ground_truth, prediction):
+#   return f"""
+# You are an expert evaluator for finance questions and answers.
+# Your task is to check whether the model output is correct or not.
+
+# Question:
+# {question}
+
+# Ground Truth Answer:
+# {ground_truth}
+
+# Model Answer:
+# {prediction}
+
+# Rules:
+#  - Return only one word: Either CORRECT or INCORRECT
+
+# Instructions:
+# - If the answer is factually correct and semantically equivalent to the ground truth, return: CORRECT
+# - If the answer contradicts, hallucinates, or is incorrect, return: INCORRECT
+# - If the ground truth says the question cannot be answered and the model properly refuses, return: CORRECT
+
+# Answer:
+# """
+
+# def call_eval_llm(prompt, max_new_tokens=10):
+#     inputs = eval_tokenizer(
+#         prompt,
+#         return_tensors="pt"
+#     ).to(eval_model.device)
+
+#     with torch.no_grad():
+#         output = eval_model.generate(
+#             **inputs,
+#             max_new_tokens=max_new_tokens,
+#             do_sample=False
+#             # temperature=0.5
+#         )
+
+#     return eval_tokenizer.decode(
+#         output[0][inputs["input_ids"].shape[1]:],
+#         skip_special_tokens=True
+#     )
+
+# def llm_judge(question, ground_truth, prediction):
+#   prompt = build_eval_prompt(question, ground_truth, prediction)
+
+#   verdict = call_eval_llm(prompt, max_new_tokens=10)
+
+#   return verdict.strip()
+
+# llm_eval_results = []
+# for result in results:
+#   question_id = result["question_id"]
+#   prediction = result["answer"]
+  
+#   sources = result["sources"]
+  
+
+#   question_text = next(q["question"] for q in rephrased_questions if q["question_id"]==question_id)
+#   rephrased_question_text = next(q["rephrased_question"] for q in rephrased_questions if q["question_id"]==question_id)
+#   ground_truth_answer = next(gt["answer"] for gt in ground_truth if gt["question_id"]==question_id)
+
+#   verdict = llm_judge(rephrased_question_text, ground_truth_answer, prediction)
+
+#   llm_eval_results.append({
+#     "question_id": question_id,
+#     "question": question_text,
+#     "rephrased_question": rephrased_question_text,
+#     "ground_truth": ground_truth_answer,
+#     "prediction": prediction,
+#     "sources": sources,
+#     "verdict": verdict
+#   })
+
+# print(pd.DataFrame(llm_eval_results).to_string())
+
+# # for i in llm_eval_results:
+# #   print(f"Question ID: {i["question_id"]}")
+# #   print(f"Verdict: {i['verdict']}")
+# #   print("="*200, "\n\n")
+
+# # Save llm evaluation dataframe
+# llm_evaluation_df = pd.DataFrame(llm_eval_results)
+# llm_evaluation_df.to_csv("llm_evaluation_df.csv", index=False)

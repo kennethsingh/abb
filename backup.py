@@ -27,10 +27,32 @@ def add_metadata(docs, document_name):
 
 apple_doc = add_metadata(apple_doc, "Apple 10-K")
 tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
-all_docs = apple_doc + tesla_doc
 
+# Remove table of contents
+apple_doc = [doc for doc in apple_doc if doc.metadata["page"] != 2]
+tesla_doc = [doc for doc in tesla_doc if doc.metadata["page"] != 2]
+# all_docs = apple_doc + tesla_doc
 print("Extracted data from PDFs")
 
+import re
+from langchain_core.documents import Document
+
+
+
+
+# Chunking
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1400,
+    chunk_overlap=100
+)
+
+chunked_docs_apple = text_splitter.split_documents(apple_doc)
+chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
+# chunked_docs_combined = text_splitter.split_documents(all_docs)
+
+# for doc in chunked_docs:
+#    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
+#       print(f"Page 20 content: {doc.page_content}")
 
 import re
 from langchain_core.documents import Document
@@ -41,10 +63,19 @@ def split_by_item_headers(docs):
 
     for doc in docs:
         text = doc.page_content
-
         splits = re.split(pattern, text)
 
-        # re.split keeps headers separately, so recombine
+        # If no Item header found → keep full page
+        if len(splits) <= 1:
+            structured_docs.append(
+                Document(
+                    page_content=text.strip(),
+                    metadata=doc.metadata.copy()
+                )
+            )
+            continue
+
+        # If headers found → recombine properly
         for i in range(1, len(splits), 2):
             header = splits[i].strip()
             content = splits[i+1].strip() if i+1 < len(splits) else ""
@@ -52,32 +83,129 @@ def split_by_item_headers(docs):
             structured_docs.append(
                 Document(
                     page_content=header + "\n" + content,
-                    metadata=doc.metadata
+                    metadata=doc.metadata.copy()
                 )
             )
 
     return structured_docs
 
-apple_doc = split_by_item_headers(apple_doc)
-tesla_doc = split_by_item_headers(tesla_doc)
-all_docs = split_by_item_headers(all_docs)
+chunked_docs_apple = split_by_item_headers(chunked_docs_apple)
+chunked_docs_tesla = split_by_item_headers(chunked_docs_tesla)
+# chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
 
+# Enrich short chunks by adding generic keywords from the doc
+import numpy as np
 
-# Chunking
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=800,
-    chunk_overlap=150
-)
+character_count_apple = []
+for doc in chunked_docs_apple:
+    character_count_apple.append(len(doc.page_content))
 
-chunked_docs_apple = text_splitter.split_documents(apple_doc)
-chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
-chunked_docs_combined = text_splitter.split_documents(all_docs)
+for i in range(len(chunked_docs_apple)):
+    if len(chunked_docs_apple[i].page_content) < np.percentile(character_count_apple, 25):
+        chunked_docs_apple[i].page_content = "Apple SEC 10-K report: " + chunked_docs_apple[i].page_content
 
-# for doc in chunked_docs:
-#    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
-#       print(f"Page 20 content: {doc.page_content}")
+character_count_tesla = []
+for doc in chunked_docs_tesla:
+    character_count_tesla.append(len(doc.page_content))
+
+for i in range(len(chunked_docs_tesla)):
+    if len(chunked_docs_tesla[i].page_content) < np.percentile(character_count_tesla, 25):
+        chunked_docs_tesla[i].page_content = "Tesla SEC 10-K report: " + chunked_docs_tesla[i].page_content
 
 print("Chunking completed")
+
+# Add Item metadata
+import re
+from typing import List, Tuple
+from langchain_core.documents import Document
+
+
+def normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text)
+
+
+def build_full_text(docs: List[Document]) -> Tuple[str, List[int]]:
+    full_text_parts = []
+    page_offsets = []
+    current_offset = 0
+
+    for doc in docs:
+        page_offsets.append(current_offset)
+
+        page_text = doc.page_content
+        full_text_parts.append(page_text)
+
+        current_offset += len(page_text) + 1
+
+    full_text = "\n".join(full_text_parts)
+
+    return full_text, page_offsets
+
+def extract_item_positions(full_text: str):
+    pattern = r"(?im)^\s*(Item\s+\d+[A-Z]?)\s*\."
+
+    item_positions = []
+
+    for match in re.finditer(pattern, full_text):
+        item_positions.append({
+            "item": match.group(1).strip(),
+            "position": match.start()
+        })
+
+    return item_positions
+
+def assign_item_metadata(
+    chunks: List[Document],
+    full_text: str,
+    item_positions: list
+) -> List[Document]:
+
+    normalized_full_text = normalize_text(full_text)
+
+    for chunk in chunks:
+        chunk_text = normalize_text(chunk.page_content)
+
+        snippet = chunk_text[:300]
+        start_index = normalized_full_text.find(snippet)
+
+        if start_index == -1:
+            continue
+
+        current_item = None
+
+        for item in item_positions:
+            if item["position"] <= start_index:
+                current_item = item["item"]
+            else:
+                break
+
+        if current_item:
+            chunk.metadata["item"] = current_item
+
+    return chunks
+
+apple_full_text, apple_offsets = build_full_text(apple_doc)
+tesla_full_text, tesla_offsets = build_full_text(tesla_doc)
+
+
+apple_item_positions = extract_item_positions(apple_full_text)
+tesla_item_positions = extract_item_positions(tesla_full_text)
+
+chunked_docs_apple = assign_item_metadata(
+    chunked_docs_apple,
+    apple_full_text,
+    apple_item_positions
+)
+
+chunked_docs_tesla = assign_item_metadata(
+    chunked_docs_tesla,
+    tesla_full_text,
+    tesla_item_positions
+)
+
+
+chunked_docs_combined = chunked_docs_apple + chunked_docs_tesla
+
 
 # Embedding
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -114,7 +242,6 @@ vector_store_combined = FAISS.from_documents(
 retriever_apple = vector_store_apple.as_retriever(search_kwargs={"k":20})
 retriever_tesla = vector_store_tesla.as_retriever(search_kwargs={"k":20})
 retriever_combined = vector_store_combined.as_retriever(search_kwargs={"k":20})
-
 
 
 # docs = retriever.invoke("unresolved staff comments")
@@ -168,7 +295,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
-# model_id = "openai/gpt-oss-120b"
 # model_id = "Qwen/Qwen2.5-7B-Instruct"
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
 # model_id = "deepseek-ai/DeepSeek-R1-Zero"
@@ -193,8 +319,8 @@ model = AutoModelForCausalLM.from_pretrained(
 def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
-  Answer using only the provided context.
-  If answer is not found, say "This question cannot be answered based on the provided documents."
+  Answer using only the provided context. Some of the terms may look similar to each other, so be careful while picking the right term.
+  Try to reason step by step if applicable, and if answer is not found, say "This question cannot be answered based on the provided documents."
   Finally, output only the answer in one sentence.
 
   Example 1:
@@ -204,6 +330,11 @@ def format_prompt(query, context):
   Example 2:
   Question: Where is Apple's headquarters?
   Answer: Apple headquarters is in USA.
+
+  Example 3:
+  Question: Apple's first CEO was Michael Scott in 1977. Who is the current CEO of Apple?
+  Answer: Current CEO of Apple in 2026 cannot be inferred from the information for 1977
+  Final Answer: This question cannot be answered based on the provided documents.
 
   Now answer this question:
   Context:
@@ -260,10 +391,10 @@ def answer_question(query: str, company: str) -> dict:
 
   docs = rerank_documents(query, docs, top_k=5)
 
-  # print(docs[0].metadata)
+  # print(f"METADATA CHECK: {docs[0].metadata}")
   sources =[]
   for doc in docs:
-    sources.append((doc.metadata['document'], "Item ??", f"p. {int(doc.metadata['page'])+1}"))
+    sources.append((doc.metadata['document'], doc.metadata.get('item'), f"p. {int(doc.metadata['page'])+1}"))
     
 
   context = "\n\n".join([
@@ -276,10 +407,13 @@ def answer_question(query: str, company: str) -> dict:
 
   prompt = format_prompt(query, context)
 
-  if "item 1b" in prompt.lower():
-     print(f"CHECK METADATA: {prompt}")
+  # if "item 1b" in prompt.lower():
+  #    print(f"CHECK METADATA: {prompt}")
 
-  answer = call_answer_llm(prompt)
+  # if query == "What is the total amount of term debt (current + non-current) reported by Apple as of September 28, 2024?":
+    #  print(f"CHECK CONTEXTS: {prompt}")
+
+  answer = call_answer_llm(prompt, max_new_tokens=150)
   return {"answer": answer, "sources": sources}
 
 print("Question answer function created")

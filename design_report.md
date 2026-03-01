@@ -44,7 +44,7 @@ The relevant chunk for this question is in page 20 of the document for Apple:
 
 ![Small chunk example](https://github.com/kennethsingh/abb/blob/c211f4e857ceaa76c34dd41ebfac40ed69ce90df/enrichment.jpg)
 
-Similarity score for this chunk with the query was very low as compared to other chunks. In order to enrich such short chunks generic words such as "Apple SEC 10-K report" were added. This led to an improved similarity and thus the LLM inference came out accurate.
+Similarity score for this chunk with the query was very low as compared to other chunks. In order to enrich such short chunks generic words such as "Apple SEC 10-K report" were added to chunks below 25th percentile in character count distribution. This led to an improved similarity and thus the LLM inference came out accurate.
 
 ## Embeddings & Vector Store
 

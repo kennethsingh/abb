@@ -396,7 +396,7 @@ def answer_question(query: str, company: str) -> dict:
   # print(docs[0].metadata)
   sources =[]
   for doc in docs:
-    sources.append((doc.metadata['document'], doc.metadata['document'], f"p. {int(doc.metadata['page'])+1}"))
+    sources.append((doc.metadata['document'], doc.metadata['item'], f"p. {int(doc.metadata['page'])+1}"))
     
 
   context = "\n\n".join([

@@ -95,8 +95,14 @@ chunked_docs_apple = split_by_item_headers(chunked_docs_apple)
 chunked_docs_tesla = split_by_item_headers(chunked_docs_tesla)
 chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
 
+# Enrich short chunks by adding generic keywords from the doc
+character_count = []
+for doc in chunked_docs_apple:
+    character_count.append(len(doc.page_content))
+
+import numpy as np
 for i in range(len(chunked_docs_apple)):
-    if "item 1b" in chunked_docs_apple[i].page_content.lower():
+    if len(chunked_docs_apple[i].page_content) < np.percentile(character_count, 25):
         chunked_docs_apple[i].page_content = "Apple SEC 10-K report: " + chunked_docs_apple[i].page_content
 
 print("Chunking completed")

@@ -70,7 +70,6 @@ Financial documents contain semantically similar phrases:
 
 Accuracy:
 Recall@5: 20 document chunks are retrieved and 5 are selected from the candidates
-Current Recall@5 is 11/13 or ~84%
 
 ---
 

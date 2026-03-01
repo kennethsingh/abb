@@ -325,7 +325,7 @@ def answer_question(query: str, company: str) -> dict:
   if query == "How many shares of common stock were issued and outstanding as of October 18, 2024?":
      print(f"CHECK CONTEXTS: {prompt}")
 
-  answer = call_answer_llm(prompt)
+  answer = call_answer_llm(prompt, max_new_tokens=75)
   return {"answer": answer, "sources": sources}
 
 print("Question answer function created")

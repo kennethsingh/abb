@@ -4,7 +4,7 @@
 # Design Report (1 Page Concept Note)
 ---
 
-```markdown
+
 # Design Report – Financial RAG System
 
 ## Objective

@@ -393,7 +393,7 @@ def answer_question(query: str, company: str) -> dict:
 
   docs = rerank_documents(query, docs, top_k=5)
 
-  # print(docs[0].metadata)
+  print(f"METADATA CHECK: {docs[0].metadata}")
   sources =[]
   for doc in docs:
     sources.append((doc.metadata['document'], doc.metadata['item'], f"p. {int(doc.metadata['page'])+1}"))
@@ -412,8 +412,8 @@ def answer_question(query: str, company: str) -> dict:
   # if "item 1b" in prompt.lower():
   #    print(f"CHECK METADATA: {prompt}")
 
-  if query == "What is the total amount of term debt (current + non-current) reported by Apple as of September 28, 2024?":
-     print(f"CHECK CONTEXTS: {prompt}")
+  # if query == "What is the total amount of term debt (current + non-current) reported by Apple as of September 28, 2024?":
+    #  print(f"CHECK CONTEXTS: {prompt}")
 
   answer = call_answer_llm(prompt, max_new_tokens=150)
   return {"answer": answer, "sources": sources}

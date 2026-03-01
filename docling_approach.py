@@ -52,7 +52,7 @@ from langchain_core.documents import Document
 # Chunking
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,
-    chunk_verlap=50
+    chunk_overlap=50
 )
 
 chunked_docs_apple = text_splitter.split_documents(apple_doc)

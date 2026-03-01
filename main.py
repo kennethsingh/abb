@@ -393,7 +393,7 @@ def answer_question(query: str, company: str) -> dict:
 
   docs = rerank_documents(query, docs, top_k=5)
 
-  print(f"METADATA CHECK: {docs[0].metadata}")
+  # print(f"METADATA CHECK: {docs[0].metadata}")
   sources =[]
   for doc in docs:
     sources.append((doc.metadata['document'], doc.metadata.get('item'), f"p. {int(doc.metadata['page'])+1}"))

@@ -34,7 +34,7 @@ print("Extracted data from PDFs")
 # Remove table of contents
 apple_doc = [doc for doc in apple_doc if doc.metadata["page"] != 2]
 tesla_doc = [doc for doc in tesla_doc if doc.metadata["page"] != 2]
-all_docs = apple_doc + tesla_doc
+# all_docs = apple_doc + tesla_doc
 
 import re
 from langchain_core.documents import Document
@@ -50,7 +50,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 chunked_docs_apple = text_splitter.split_documents(apple_doc)
 chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
-chunked_docs_combined = text_splitter.split_documents(all_docs)
+# chunked_docs_combined = text_splitter.split_documents(all_docs)
 
 # for doc in chunked_docs:
 #    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
@@ -93,19 +93,28 @@ def split_by_item_headers(docs):
 
 chunked_docs_apple = split_by_item_headers(chunked_docs_apple)
 chunked_docs_tesla = split_by_item_headers(chunked_docs_tesla)
-
+# chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
 
 # Enrich short chunks by adding generic keywords from the doc
-character_count = []
-for doc in chunked_docs_apple:
-    character_count.append(len(doc.page_content))
-
 import numpy as np
+
+character_count_apple = []
+for doc in chunked_docs_apple:
+    character_count_apple.append(len(doc.page_content))
+
 for i in range(len(chunked_docs_apple)):
-    if len(chunked_docs_apple[i].page_content) < np.percentile(character_count, 25):
+    if len(chunked_docs_apple[i].page_content) < np.percentile(character_count_apple, 25):
         chunked_docs_apple[i].page_content = "Apple SEC 10-K report: " + chunked_docs_apple[i].page_content
 
-chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
+character_count_tesla = []
+for doc in chunked_docs_tesla:
+    character_count_tesla.append(len(doc.page_content))
+
+for i in range(len(chunked_docs_tesla)):
+    if len(chunked_docs_tesla[i].page_content) < np.percentile(character_count_tesla, 25):
+        chunked_docs_tesla[i].page_content = "Tesla SEC 10-K report: " + chunked_docs_tesla[i].page_content
+
+chunked_docs_combined = chunked_docs_apple + chunked_docs_tesla
 
 print("Chunking completed")
 

@@ -1,10 +1,7 @@
 
 ---
 
-# ✅ 2️⃣ Design Report.md (1 Page Concept Note)
-
-This should be concise, technical, and justify decisions.
-
+# Design Report (1 Page Concept Note)
 ---
 
 ```markdown
@@ -14,7 +11,7 @@ This should be concise, technical, and justify decisions.
 
 Build a Retrieval-Augmented Generation (RAG) system that answers complex financial and legal questions using Apple’s 2024 10-K and Tesla’s 2023 10-K filings.
 
-The system must:
+Constraints:
 - Use only retrieved context
 - Cite document sources
 - Refuse out-of-scope questions
@@ -22,40 +19,42 @@ The system must:
 
 ---
 
-## 1. Document Ingestion & Chunking Strategy
+## Document Ingestion & Chunking Strategy
 
 PDFs were loaded using `PyPDFLoader`.
 
 Chunking approach:
 - Primary split: RecursiveCharacterTextSplitter (1400 chars, 100 overlap)
-- Secondary split: Regex-based splitting by `Item X` section headers
+- Secondary split: Regex-based splitting by `Item` section headers
 
 Rationale:
 SEC filings are structured by Items (Item 1, Item 1A, Item 7, Item 8, etc.). Splitting by section headers improves semantic coherence and retrieval precision.
 
 Metadata preserved:
 - `document` (Apple 10-K / Tesla 10-K)
-- `page` (original page number)
-
-This enables accurate source citation.
+- `item` (Item 1B, etc.)
+- `page` (Page number - index 1)
 
 ---
 
-## 2. Embeddings & Vector Store
+## Text Enrichment
+Some of the chunks after applying the above logic turned out to be small. In particular question #5 of the evaluation set:
+`Does Apple have any unresolved staff comments from the SEC as of this filing? How do you know?`
+The relevant chunk for this question is in page 20 of the document for Apple:
+![alt text](image.png)
+Similarity score for this chunk with the query was very low as compared to other chunks. In order to enrich such short chunks generic words such as "Apple SEC 10-K report" were added. This led to an improved similarity and thus the LLM inference came out accurate.
+
+## Embeddings & Vector Store
 
 Embedding model:
 - `BAAI/bge-base-en-v1.5`
-- Normalized embeddings
 
 Vector store:
 - FAISS
 
-Reasoning:
-BGE models perform strongly on semantic retrieval benchmarks and work efficiently in local environments.
-
 ---
 
-## 3. Retrieval & Reranking
+## Retrieval & Reranking
 
 Pipeline:
 1. Top-20 similarity retrieval
@@ -67,43 +66,31 @@ Financial documents contain semantically similar phrases:
 - “Total term debt”
 - “Total term debt principal”
 
-Bi-encoders may retrieve near matches.  
-Cross-encoders significantly improve precision by scoring query–document pairs jointly.
+Accuracy:
+Recall@5: 20 document chunks are retrieved and 5 are selected from the candidates
+Current Recall@5 is 11/13 or ~84%
 
 ---
 
-## 4. Query Rewriting
+## LLM Selection
 
-A lightweight LLM-based query optimizer rewrites natural language questions into short keyword-style search queries.
-
-Example:
-"What was Apple's total revenue..."  
-→ "Apple total revenue fiscal year ended September 28 2024 Item 8"
-
-This improves retrieval alignment with SEC document phrasing.
-
----
-
-## 5. LLM Selection
-
-Model:
+Model Selected:
 - `mistralai/Mistral-7B-Instruct-v0.3`
 
 Reasons:
-- Fully open-source
+- Open-source
 - Strong instruction-following capability
 - Efficient inference
-- Good performance for financial reasoning tasks
 
-Prompt design enforces:
+Prompt Engineering:
 - Context-only answering
-- Explicit refusal if answer not present
+- Few shot prompting
 - No hallucinations
 - One-sentence output
 
 ---
 
-## 6. Out-of-Scope Handling
+## Out-of-Scope Handling
 
 If:
 - Answer not present in retrieved context
@@ -114,28 +101,12 @@ System responds:
 
 "This question cannot be answered based on the provided documents."
 
-This prevents hallucination and ensures reliability.
-
 ---
 
-## 7. System Strengths
 
-- Hybrid retrieval (bi-encoder + cross-encoder)
-- Structured SEC-aware chunking
-- Metadata-preserving citations
-- Fully open-source stack
-- Cloud-runnable notebook
+## Limitations
+
+- Table extraction is text-based (no structured table parsing) - scope for future work
+- Large model inference may require GPU for efficiency - current model runs on H100 on Kaggle
 
 ---
-
-## 8. Limitations
-
-- Table extraction is text-based (no structured table parsing)
-- Numeric reasoning depends on LLM interpretation
-- Large model inference may require GPU for efficiency
-
----
-
-## Conclusion
-
-The system provides a robust, production-style financial RAG pipeline that balances retrieval precision, interpretability, and hallucination control while remaining fully open-source and reproducible.

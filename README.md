@@ -16,10 +16,10 @@ This project implements a Retrieval-Augmented Generation (RAG) system that answe
 - Apple Inc. 2024 Form 10-K
 - Tesla, Inc. 2023 Form 10-K
 
-The system retrieves relevant sections from the filings and generates accurate, well-sourced answers using a locally hosted LLM.
+The system retrieves relevant sections from the filings and generates accurate, well-sourced answers using an open sourced LLM from Huggingface
 
 ---
-# Notebook with all modules imported and runnable:
+# Notebook with all modules imported and runnable
 https://colab.research.google.com/drive/1O2nDkuLSe4mY-f1aPtGBRCTtfiKEIUXP?usp=sharing
 
 ---

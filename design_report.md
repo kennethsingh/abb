@@ -111,3 +111,6 @@ System responds:
 - Large model inference may require GPU for efficiency - current model runs on H100 on Kaggle
 
 ---
+
+## Notes:
+1. Table of contents pages were removed because it acted as noise

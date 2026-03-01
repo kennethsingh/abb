@@ -4,14 +4,26 @@ start = time.perf_counter()
 print("Started")
 
 import pandas as pd
+import re
+from langchain_core.documents import Document
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+import torch
+from langchain_community.vectorstores import FAISS
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM
+import torch.nn.functional as F
+# from transformers import AutoTokenizer, AutoModelForCausalLM
+
 import warnings
 warnings.filterwarnings("ignore")
 
 APPLE_DOC = "https://s2.q4cdn.com/470004039/files/doc_earnings/2024/q4/filing/10-Q4-2024-As-Filed.pdf"
 TESLA_DOC = "https://ir.tesla.com/_flysystem/s3/sec/000162828024002390/tsla-20231231-gen.pdf"
 
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+# =========================================================================
+# PDF DATA EXTRACTION
+# =========================================================================
 
 apple_loader = PyPDFLoader(APPLE_DOC)
 tesla_loader = PyPDFLoader(TESLA_DOC)
@@ -20,6 +32,9 @@ apple_doc = apple_loader.load()
 tesla_doc = tesla_loader.load()
 
 def add_metadata(docs, document_name):
+  """
+  Add metadata document and page number
+  """
   for doc in docs:
     doc.metadata['document'] = document_name
     doc.metadata['page'] = doc.metadata.get('page', None)
@@ -28,21 +43,17 @@ def add_metadata(docs, document_name):
 apple_doc = add_metadata(apple_doc, "Apple 10-K")
 tesla_doc = add_metadata(tesla_doc, "Tesla 10-K")
 
-
-print("Extracted data from PDFs")
-
 # Remove table of contents
 apple_doc = [doc for doc in apple_doc if doc.metadata["page"] != 2]
 tesla_doc = [doc for doc in tesla_doc if doc.metadata["page"] != 2]
-# all_docs = apple_doc + tesla_doc
 
-import re
-from langchain_core.documents import Document
+print("Extracted data from PDFs")
 
 
+# ===============================================
+# CHUNKING
+# ===============================================
 
-
-# Chunking
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1400,
     chunk_overlap=100
@@ -50,14 +61,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 chunked_docs_apple = text_splitter.split_documents(apple_doc)
 chunked_docs_tesla = text_splitter.split_documents(tesla_doc)
-# chunked_docs_combined = text_splitter.split_documents(all_docs)
 
-# for doc in chunked_docs:
-#    if (doc.metadata["page"] == 19) & ("Item 1B" in doc.page_content):
-#       print(f"Page 20 content: {doc.page_content}")
-
-import re
-from langchain_core.documents import Document
 
 def split_by_item_headers(docs):
     pattern = r"(\nItem\s+\d+[A-Z]?\.?.*?)\n"
@@ -93,7 +97,7 @@ def split_by_item_headers(docs):
 
 chunked_docs_apple = split_by_item_headers(chunked_docs_apple)
 chunked_docs_tesla = split_by_item_headers(chunked_docs_tesla)
-# chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
+
 
 # Enrich short chunks by adding generic keywords from the doc
 import numpy as np
@@ -122,11 +126,11 @@ from typing import List, Tuple
 from langchain_core.documents import Document
 
 
-def normalize_text(text: str) -> str:
+def normalize_text(text):
     return re.sub(r"\s+", " ", text)
 
 
-def build_full_text(docs: List[Document]) -> Tuple[str, List[int]]:
+def build_full_text(docs):
     full_text_parts = []
     page_offsets = []
     current_offset = 0
@@ -143,7 +147,7 @@ def build_full_text(docs: List[Document]) -> Tuple[str, List[int]]:
 
     return full_text, page_offsets
 
-def extract_item_positions(full_text: str):
+def extract_item_positions(full_text):
     pattern = r"(?im)^\s*(Item\s+\d+[A-Z]?)\s*\."
 
     item_positions = []
@@ -156,11 +160,7 @@ def extract_item_positions(full_text: str):
 
     return item_positions
 
-def assign_item_metadata(
-    chunks: List[Document],
-    full_text: str,
-    item_positions: list
-) -> List[Document]:
+def assign_item_metadata(chunks, full_text, item_positions):
 
     normalized_full_text = normalize_text(full_text)
 
@@ -208,10 +208,9 @@ chunked_docs_tesla = assign_item_metadata(
 
 chunked_docs_combined = chunked_docs_apple + chunked_docs_tesla
 
-
-# Embedding
-from langchain_community.embeddings import HuggingFaceEmbeddings
-import torch
+# ===============================================================
+# EMBEDDING
+# ===============================================================
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
@@ -226,8 +225,6 @@ print("Embedding completed")
 
 
 # Put embeddings in vector db
-from langchain_community.vectorstores import FAISS
-
 vector_store_apple = FAISS.from_documents(
     chunked_docs_apple,
     embedding_model
@@ -246,13 +243,9 @@ retriever_tesla = vector_store_tesla.as_retriever(search_kwargs={"k":20})
 retriever_combined = vector_store_combined.as_retriever(search_kwargs={"k":20})
 
 
-# docs = retriever.invoke("unresolved staff comments")
-# for doc in docs:
-#    print(f"Retrieved Page: {doc.metadata['page']}")
-
-# Reranking
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch.nn.functional as F
+# ====================================================================
+# RERANKING
+# ====================================================================
 
 reranker_model_id = "BAAI/bge-reranker-base"
 
@@ -290,10 +283,9 @@ def rerank_documents(query, docs, top_k=5):
 
 
 
-
-
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+# ===============================================================
+# SETUP LLM FOR INFERENCE
+# ===============================================================
 
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
@@ -313,10 +305,6 @@ model = AutoModelForCausalLM.from_pretrained(
     dtype=torch.bfloat16
 )
 
-# generator = pipeline(
-#   "text-generation",
-#   model=model,
-#   tokenizer=tokenizer)
 
 def format_prompt(query, context):
   return f"""
@@ -348,8 +336,6 @@ def format_prompt(query, context):
   Answer:
   """
 
-
-import torch
 
 def call_answer_llm(prompt, max_new_tokens=50):
     inputs = tokenizer(
@@ -508,6 +494,8 @@ for question in rephrased_questions:
   question_text = question['question']
   rephrased_question_text = question['rephrased_question']
 
+  print(f"QUESTION: {question_text}")
+
   if "apple" in question_text.lower():
      response = answer_question(query=question_text, company="apple")
      #  response = answer_question(rephrased_question_text)
@@ -516,6 +504,9 @@ for question in rephrased_questions:
      #  response = answer_question(rephrased_question_text)
   else:
      response = answer_question(query=question_text, company="combined")
+
+  print(f"ANSWER: {response.get('answer')}")
+  print("="*100, "\n\n")
   
   response['question_id'] = question_id
   results.append(response)
@@ -529,7 +520,10 @@ print(f"Total time taken = {time.perf_counter()-start:.0f} seconds")
 print("Answers received")
 
 print("Evaluating output")
-# Evaluation
+
+# ===============================================================
+# EVALUATION USING LLM
+# ===============================================================
 ground_truth = [{"question_id": 1, "answer": "$391,036 million", "source": "Apple 10-K, Item 8, p. 282"},
                 {"question_id": 2, "answer": "15,115,823,000 shares", "source": "Apple 10-K, first paragraph"},
                 {"question_id": 3, "answer": "$96,662 million", "source": "Apple 10-K, Item 8, Note 9, p. 394"},

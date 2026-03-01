@@ -20,7 +20,7 @@ The system retrieves relevant sections from the filings and generates accurate, 
 
 ---
 # Notebook with all modules imported and runnable
-https://colab.research.google.com/drive/1O2nDkuLSe4mY-f1aPtGBRCTtfiKEIUXP?usp=sharing
+https://www.kaggle.com/code/kenneth14/abb-assignment
 
 ---
 

@@ -243,6 +243,10 @@ def format_prompt(query, context):
   Question: Where is Apple's headquarters?
   Answer: Apple headquarters is in USA.
 
+  Example 3:
+  Question: Apple's first CEO was Michael Scott in 1977. Who is the current CEO of Apple?
+  Answer: Current CEO of Apple in 2026 cannot be inferred from the information for 1977
+
   Now answer this question:
   Context:
   {context}

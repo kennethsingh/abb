@@ -245,7 +245,7 @@ def format_prompt(query, context):
 
   Example 3:
   Question: Apple's first CEO was Michael Scott in 1977. Who is the current CEO of Apple?
-  <<Thinking>> Current CEO of Apple in 2026 cannot be inferred from the information for 1977 <</Thinking>>
+  Logic: Current CEO of Apple in 2026 cannot be inferred from the information for 1977
   Answer: This question cannot be answered based on the provided documents.
 
   Now answer this question:

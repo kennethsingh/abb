@@ -231,7 +231,7 @@ model = AutoModelForCausalLM.from_pretrained(
 def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
-  Answer using only the provided context. Some of the terms may look similar to each other, so be careful while picking the right term.
+  Answer using only the provided context. Some of the terms may look similar to each other, so be careful while picking the right term. For example, "Total term debt" is not the same as "Total term debt principal".
   Try to reason step by step if applicable, and if answer is not found, say "This question cannot be answered based on the provided documents."
   Finally, output only the answer in one sentence.
 

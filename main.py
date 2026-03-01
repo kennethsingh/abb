@@ -114,9 +114,100 @@ for i in range(len(chunked_docs_tesla)):
     if len(chunked_docs_tesla[i].page_content) < np.percentile(character_count_tesla, 25):
         chunked_docs_tesla[i].page_content = "Tesla SEC 10-K report: " + chunked_docs_tesla[i].page_content
 
+print("Chunking completed")
+
+# Add Item metadata
+import re
+from typing import List, Tuple
+from langchain_core.documents import Document
+
+
+def normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text)
+
+
+def build_full_text(docs: List[Document]) -> Tuple[str, List[int]]:
+    full_text_parts = []
+    page_offsets = []
+    current_offset = 0
+
+    for doc in docs:
+        page_offsets.append(current_offset)
+
+        page_text = doc.page_content
+        full_text_parts.append(page_text)
+
+        current_offset += len(page_text) + 1
+
+    full_text = "\n".join(full_text_parts)
+
+    return full_text, page_offsets
+
+def extract_item_positions(full_text: str):
+    pattern = r"(?im)^\s*(Item\s+\d+[A-Z]?)\s*\."
+
+    item_positions = []
+
+    for match in re.finditer(pattern, full_text):
+        item_positions.append({
+            "item": match.group(1).strip(),
+            "position": match.start()
+        })
+
+    return item_positions
+
+def assign_item_metadata(
+    chunks: List[Document],
+    full_text: str,
+    item_positions: list
+) -> List[Document]:
+
+    normalized_full_text = normalize_text(full_text)
+
+    for chunk in chunks:
+        chunk_text = normalize_text(chunk.page_content)
+
+        snippet = chunk_text[:300]
+        start_index = normalized_full_text.find(snippet)
+
+        if start_index == -1:
+            continue
+
+        current_item = None
+
+        for item in item_positions:
+            if item["position"] <= start_index:
+                current_item = item["item"]
+            else:
+                break
+
+        if current_item:
+            chunk.metadata["item"] = current_item
+
+    return chunks
+
+apple_full_text, apple_offsets = build_full_text(apple_doc)
+tesla_full_text, tesla_offsets = build_full_text(tesla_doc)
+
+
+apple_item_positions = extract_item_positions(apple_full_text)
+tesla_item_positions = extract_item_positions(tesla_full_text)
+
+chunked_docs_apple = assign_item_metadata(
+    chunked_docs_apple,
+    apple_full_text,
+    apple_item_positions
+)
+
+chunked_docs_tesla = assign_item_metadata(
+    chunked_docs_tesla,
+    tesla_full_text,
+    tesla_item_positions
+)
+
+
 chunked_docs_combined = chunked_docs_apple + chunked_docs_tesla
 
-print("Chunking completed")
 
 # Embedding
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -206,7 +297,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 # model_id = "Qwen/Qwen2.5-0.5B-Instruct"
-# model_id = "openai/gpt-oss-120b"
 # model_id = "Qwen/Qwen2.5-7B-Instruct"
 # model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
 # model_id = "deepseek-ai/DeepSeek-R1-Zero"
@@ -306,7 +396,7 @@ def answer_question(query: str, company: str) -> dict:
   # print(docs[0].metadata)
   sources =[]
   for doc in docs:
-    sources.append((doc.metadata['document'], "Item ??", f"p. {int(doc.metadata['page'])+1}"))
+    sources.append((doc.metadata['document'], doc.metadata['document'], f"p. {int(doc.metadata['page'])+1}"))
     
 
   context = "\n\n".join([

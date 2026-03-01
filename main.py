@@ -322,7 +322,7 @@ def answer_question(query: str, company: str) -> dict:
   # if "item 1b" in prompt.lower():
   #    print(f"CHECK METADATA: {prompt}")
 
-  if query == "Who is the CFO of Apple as of 2025?":
+  if query == "How many shares of common stock were issued and outstanding as of October 18, 2024?":
      print(f"CHECK CONTEXTS: {prompt}")
 
   answer = call_answer_llm(prompt)

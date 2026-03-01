@@ -324,7 +324,7 @@ def answer_question(query: str, company: str) -> dict:
   # if "item 1b" in prompt.lower():
   #    print(f"CHECK METADATA: {prompt}")
 
-  if query == "What is the total amount of term debt (current + non-current) reported by Apple as of September 28, 2024?":
+  if query == "Does Apple have any unresolved staff comments from the SEC as of this filing? How do you know?":
      print(f"CHECK CONTEXTS: {prompt}")
 
   answer = call_answer_llm(prompt)

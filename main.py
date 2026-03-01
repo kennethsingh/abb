@@ -95,6 +95,10 @@ chunked_docs_apple = split_by_item_headers(chunked_docs_apple)
 chunked_docs_tesla = split_by_item_headers(chunked_docs_tesla)
 chunked_docs_combined = split_by_item_headers(chunked_docs_combined)
 
+for i in range(len(chunked_docs_apple)):
+    if "item 1b" in chunked_docs_apple[i].page_content.lower():
+        chunked_docs_apple[i].page_content = "Apple SEC 10-K report: " + chunked_docs_apple[i].page_content
+
 print("Chunking completed")
 
 # Embedding

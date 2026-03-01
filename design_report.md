@@ -41,7 +41,9 @@ Metadata preserved:
 Some of the chunks after applying the above logic turned out to be small. In particular question #5 of the evaluation set:
 `Does Apple have any unresolved staff comments from the SEC as of this filing? How do you know?`
 The relevant chunk for this question is in page 20 of the document for Apple:
+
 ![Small chunk example](https://github.com/kennethsingh/abb/blob/c211f4e857ceaa76c34dd41ebfac40ed69ce90df/enrichment.jpg)
+
 Similarity score for this chunk with the query was very low as compared to other chunks. In order to enrich such short chunks generic words such as "Apple SEC 10-K report" were added. This led to an improved similarity and thus the LLM inference came out accurate.
 
 ## Embeddings & Vector Store

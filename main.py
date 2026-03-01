@@ -44,7 +44,7 @@ from langchain_core.documents import Document
 
 # Chunking
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=800,
+    chunk_size=900,
     chunk_overlap=50
 )
 

@@ -232,7 +232,7 @@ def format_prompt(query, context):
   return f"""
   You are a financial analyst assistant.
   Answer using only the provided context.
-  If answer is not found, say "This question cannot be answered based on the provided documents."
+  Try to reason step by step if applicable, and if answer is not found, say "This question cannot be answered based on the provided documents."
   Finally, output only the answer in one sentence.
 
   Example 1:

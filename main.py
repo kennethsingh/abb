@@ -562,7 +562,7 @@ truth_vs_prediction = pd.DataFrame(truth_vs_prediction)
 truth_vs_prediction.to_csv("truth_vs_prediction.csv", index = False)
 
 
-print("-"*80, "COMPLETE", "-"*80)
+print("-"*40, "COMPLETE", "-"*40)
 
 ## Semantic similarity using Cosine similarity of embeddings
 # from sklearn.metrics.pairwise import cosine_similarity

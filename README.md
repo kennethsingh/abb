@@ -74,6 +74,7 @@ The final output table contains the following columns:
 4. `prediction`: The output from the LLM after retrieval of the context chunks
 5. `sources`: The metadata of the sources for the prediction [document, section, page]
 
+---
 # Notes
 1. The function call_rephrase_llm for rephrasing the queries was an attempt to improve retrieval quality by manipulating the query, and the current version does not make use of this even though it is part of main.py
 2. The current version also includes an evaluation function by using an LLM to compare the expected output vs the prediction. Though not very useful for only 13 questions, this was set up keeping in mind a scenario where we have a large number of questions

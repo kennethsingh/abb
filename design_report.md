@@ -4,9 +4,6 @@
 # Design Report (1 Page Concept Note)
 ---
 
-
-# Design Report – Financial RAG System
-
 ## Objective
 
 Build a Retrieval-Augmented Generation (RAG) system that answers complex financial and legal questions using Apple’s 2024 10-K and Tesla’s 2023 10-K filings.
